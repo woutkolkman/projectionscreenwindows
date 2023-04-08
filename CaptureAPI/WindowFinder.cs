@@ -12,9 +12,9 @@ namespace CaptureAPI
     {
         const int TIMEOUT = 5; //seconds
 
-        public static Rectangle GetWindowLayout(String windowName)
+        public static Rectangle GetWindowLayout(String windowName, String processName)
         {
-            Console.WriteLine("[" + DateTime.Now.TimeOfDay + "] GetWindowLayout, Searching for window \"" + windowName + "\"");
+            Console.WriteLine("[" + DateTime.Now.TimeOfDay + "] GetWindowLayout, Searching for window \"" + windowName + "\" and/or process \"" + processName + "\"");
 
             Rectangle rect = new Rectangle();
             WindowFinder wf = new WindowFinder();
@@ -23,34 +23,39 @@ namespace CaptureAPI
             );
 
             bool callback(int handle) {
-                Console.WriteLine("[" + DateTime.Now.TimeOfDay + "] GetWindowLayout, Found window \"" + windowName + "\"");
+                Console.WriteLine("[" + DateTime.Now.TimeOfDay + "] GetWindowLayout, Found window \"" + windowName + "\" and/or process \"" + processName + "\"");
                 GetWindowRect(handle, ref rect);
                 return false; //stop searching for windows
             }
 
             if (!task.Wait(TimeSpan.FromSeconds(TIMEOUT)))
-                Console.WriteLine("[" + DateTime.Now.TimeOfDay + "] GetWindowLayout, Window \"" + windowName + "\" not found");
+                Console.WriteLine("[" + DateTime.Now.TimeOfDay + "] GetWindowLayout, Window \"" + windowName + "\" and/or process \"" + processName + "\" not found");
             return rect;
         }
 
-        public static int GetWindowHandle(String windowName)
+        public static int GetWindowHandle(String windowName, String processName)
         {
-            Console.WriteLine("[" + DateTime.Now.TimeOfDay + "] GetWindowHandle, Searching for window \"" + windowName + "\"");
+            Console.WriteLine("[" + DateTime.Now.TimeOfDay + "] GetWindowHandle, Searching for window \"" + windowName + "\" and/or process \"" + processName + "\"");
 
             int result = INVALID_HANDLE_VALUE;
             WindowFinder wf = new WindowFinder();
             var task = Task.Run(() =>
-                wf.FindWindows(0, null, new Regex(windowName), null, new WindowFinder.FoundWindowCallback(callback))
+                wf.FindWindows(
+                    0, null, 
+                    String.IsNullOrEmpty(windowName) ? null : new Regex(windowName), 
+                    String.IsNullOrEmpty(processName) ? null : new Regex(processName), 
+                    new WindowFinder.FoundWindowCallback(callback)
+                )
             );
 
             bool callback(int handle) {
-                Console.WriteLine("[" + DateTime.Now.TimeOfDay + "] GetWindowHandle, Found window \"" + windowName + "\" with handle: " + handle.ToString());
+                Console.WriteLine("[" + DateTime.Now.TimeOfDay + "] GetWindowHandle, Found window \"" + windowName + "\" and/or process \"" + processName + "\" with handle: " + handle.ToString());
                 result = handle;
                 return false; //stop searching for windows
             }
 
             if (!task.Wait(TimeSpan.FromSeconds(TIMEOUT)))
-                Console.WriteLine("[" + DateTime.Now.TimeOfDay + "] GetWindowHandle, Window \"" + windowName + "\" not found");
+                Console.WriteLine("[" + DateTime.Now.TimeOfDay + "] GetWindowHandle, Window \"" + windowName + "\" and/or process \"" + processName + "\" not found");
             return result;
         }
 #pragma warning restore CS8625
@@ -105,7 +110,7 @@ namespace CaptureAPI
         // a Regex object that will be matched to the window text, unless it's null. The process parameter can be null as well,
         // otherwise it'll match on the process name (Internet Explorer = "iexplore"). Finally we take the FoundWindowCallback
         // function that'll be called each time a suitable window has been found.
-        public void FindWindows(int parentHandle, Regex className, Regex windowText, Regex process, FoundWindowCallback fwc)
+        public void FindWindows(int parentHandle, Regex? className, Regex? windowText, Regex? process, FoundWindowCallback fwc)
         {
             this.parentHandle = parentHandle;
             this.className = className;

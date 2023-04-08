@@ -7,7 +7,8 @@ namespace CaptureAPI
     public class Program
     {
         public static TimeSpan interval = new TimeSpan(250000); //40 fps default target
-        public static string captureWindow = "Command Prompt";
+        public static string captureWindow = "";
+        public static string captureProcess = "";
 
         public static string openProgram = ""; //if window is not found, program will be opened
         public static string openProgramArguments = "";
@@ -22,22 +23,27 @@ namespace CaptureAPI
 
             for (int i = 0; i < args.Length; i++) {
                 switch (args[i]) {
-                    case "--cw": case "-c": //example: ./CaptureAPI.exe --cw "VLC"
+                    case "--cw": case "-c": //example: ./CaptureAPI.exe --cw VLC
                         if (++i < args.Length)
                             captureWindow = args[i];
                         break;
 
-                    case "--op": case "-o": //example: ./CaptureAPI.exe --op "C:\vlc.exe"
+                    case "--cp": case "-p": //example: ./CaptureAPI.exe -p notepad
+                        if (++i < args.Length)
+                            captureProcess = args[i];
+                        break;
+
+                    case "--op": case "-o": //example: ./CaptureAPI.exe --op "C:\Program Files\VideoLAN\VLC\vlc.exe" --cw "VLC"
                         if (++i < args.Length)
                             openProgram = args[i];
                         break;
 
-                    case "--arg": case "-a": //example: ./CaptureAPI.exe -a "\"C:\vids folder\pebbsi.mp4\""
+                    case "--arg": case "-a": //example: ./CaptureAPI.exe -a "\"C:\vids folder\pebbsi.mp4\"" --op "C:\Program Files\VideoLAN\VLC\vlc.exe"
                         if (++i < args.Length)
                             openProgramArguments = args[i];
                         break;
 
-                    case "--fps": case "-f": //example: ./CaptureAPI.exe --fps 30
+                    case "--fps": case "-f": //example: ./CaptureAPI.exe --fps 30 -p notepad
                         if (!(++i < args.Length))
                             break;
                         int fps = Int32.Parse(args[i]);
@@ -91,7 +97,7 @@ namespace CaptureAPI
 
                 //search for window if handle is invalid
                 if (windowHandle == WindowFinder.INVALID_HANDLE_VALUE)
-                    windowHandle = WindowFinder.GetWindowHandle(captureWindow);
+                    windowHandle = WindowFinder.GetWindowHandle(captureWindow, captureProcess);
 
                 //try again next loop
                 if (windowHandle == WindowFinder.INVALID_HANDLE_VALUE) {
