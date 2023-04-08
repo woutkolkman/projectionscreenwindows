@@ -15,9 +15,7 @@ namespace ProjectionScreenWindows
         public int frame = 0;
         public DateTime measureFps = DateTime.Now;
         public FivePebblesPong.ShowMediaMovementBehavior adjusting = new FivePebblesPong.ShowMediaMovementBehavior();
-        //public int[] cropFrames = new int[] { 1, 1, -18, -31 }; //left-bottom-right-top
-        //public int[] cropFrames = new int[] { 1, 53, -1, -52 };
-        public int[] cropFrames = new int[] { 0, 0, 0, 0 };
+        public int[] cropFrames = new int[] { Options.cropLeft.Value, Options.cropBottom.Value, Options.cropRight.Value, Options.cropTop.Value }; //left-bottom-right-top
 
         Queue<byte[]> imgLoad = new Queue<byte[]>();
         Mutex imgLoadMtx = new Mutex(); //prevents queue from being used twice at the same time
@@ -33,9 +31,6 @@ namespace ProjectionScreenWindows
         //constructor starts background process, every newline received will be handled by DataReceivedEvent()
         public Capture(OracleBehavior self) : base(self)
         {
-            //"--cw \"VLC media player\" --op \"C:\\Program Files\\VideoLAN\\VLC\\vlc.exe\" --arg \"\\\"C:\\Users\\Wout Kolkman\\Downloads\\2023-04-01 09-51-51.mp4\\\"\""
-            //"-c \"Command Prompt\" -o \"CMD.exe\""
-
             string args = "";
             if (!String.IsNullOrEmpty(Options.windowName.Value))
                 args += " -c \"" + Options.windowName.Value + "\"";
@@ -230,9 +225,9 @@ namespace ProjectionScreenWindows
         }
 
 
+        //update all image positions
         public override void Draw(Vector2 offset)
         {
-            //update all image positions
             foreach (ProjectedImage img in imgLoiter)
                 img.pos = adjusting.showMediaPos - (Options.ignoreOrigPos.Value ? new Vector2() : offset);
         }
