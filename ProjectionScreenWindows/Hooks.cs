@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Reflection;
 using MonoMod.RuntimeDetour;
 using System.Runtime.CompilerServices;
-using FivePebblesPong;
 
 namespace ProjectionScreenWindows
 {
@@ -9,16 +9,22 @@ namespace ProjectionScreenWindows
     {
         public static void Apply()
         {
+            //replace all SS games with Capture
+            IDetour detourSSGetNewFPGame = new Hook(
+                typeof(FivePebblesPong.Plugin).GetMethod("SSGetNewFPGame", BindingFlags.Static | BindingFlags.Public),
+                typeof(Hooks).GetMethod("FivePebblesPongPlugin_SSGetNewFPGame_RuntimeDetour", BindingFlags.Static | BindingFlags.Public)
+            );
+
             //replace RM Pong with Capture
-            IDetour detourRMGetNewFPGame = new Detour<Func<MoreSlugcats.SSOracleRotBehavior, FivePebblesPong.FPGame>>(
-                FivePebblesPong.Plugin.RMGetNewFPGame,
-                FivePebblesPongPlugin_RMGetNewFPGame_RuntimeDetour
+            IDetour detourRMGetNewFPGame = new Hook(
+                typeof(FivePebblesPong.Plugin).GetMethod("RMGetNewFPGame", BindingFlags.Static | BindingFlags.Public),
+                typeof(Hooks).GetMethod("FivePebblesPongPlugin_RMGetNewFPGame_RuntimeDetour", BindingFlags.Static | BindingFlags.Public)
             );
 
             //replace SL Pong with Capture
-            IDetour detourSLGetNewFPGame = new Detour<Func<SLOracleBehavior, FivePebblesPong.FPGame>>(
-                FivePebblesPong.Plugin.SLGetNewFPGame,
-                FivePebblesPongPlugin_SLGetNewFPGame_RuntimeDetour
+            IDetour detourSLGetNewFPGame = new Hook(
+                typeof(FivePebblesPong.Plugin).GetMethod("SLGetNewFPGame", BindingFlags.Static | BindingFlags.Public),
+                typeof(Hooks).GetMethod("FivePebblesPongPlugin_SLGetNewFPGame_RuntimeDetour", BindingFlags.Static | BindingFlags.Public)
             );
         }
 
@@ -30,20 +36,26 @@ namespace ProjectionScreenWindows
 
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public static FivePebblesPong.FPGame FivePebblesPongPlugin_RMGetNewFPGame_RuntimeDetour(MoreSlugcats.SSOracleRotBehavior self)
+        public static FivePebblesPong.FPGame FivePebblesPongPlugin_SSGetNewFPGame_RuntimeDetour(Func<SSOracleBehavior, int, FivePebblesPong.FPGame> orig, SSOracleBehavior ob, int nr)
         {
-            return new Capture(self);
+            return new Capture(ob);
         }
 
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public static FivePebblesPong.FPGame FivePebblesPongPlugin_SLGetNewFPGame_RuntimeDetour(SLOracleBehavior self)
+        public static FivePebblesPong.FPGame FivePebblesPongPlugin_RMGetNewFPGame_RuntimeDetour(Func<MoreSlugcats.SSOracleRotBehavior, FivePebblesPong.FPGame> orig, MoreSlugcats.SSOracleRotBehavior ob)
         {
-            Plugin.ME.Logger_p.LogInfo("FivePebblesPongPlugin_SLGetNewFPGame_RuntimeDetour");
-            if (self.oracle.room.game.IsMoonHeartActive()) {
-                return new Capture(self);
+            return new Capture(ob);
+        }
+
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public static FivePebblesPong.FPGame FivePebblesPongPlugin_SLGetNewFPGame_RuntimeDetour(Func<SLOracleBehavior, FivePebblesPong.FPGame> orig, SLOracleBehavior ob)
+        {
+            if (ob.oracle.room.game.IsMoonHeartActive()) {
+                return new Capture(ob);
             } else {
-                return new Dino(self);
+                return orig(ob);
             }
         }
     }
