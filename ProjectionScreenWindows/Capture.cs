@@ -32,10 +32,23 @@ namespace ProjectionScreenWindows
 
 
         //constructor starts background process, every newline received will be handled by DataReceivedEvent()
-        public Capture(OracleBehavior self, string args = "-c \"Command Prompt\" -o \"CMD.exe\"") : base(self)
+        public Capture(OracleBehavior self) : base(self)
         {
             //"--cw \"VLC media player\" --op \"C:\\Program Files\\VideoLAN\\VLC\\vlc.exe\" --arg \"\\\"C:\\Users\\Wout Kolkman\\Downloads\\2023-04-01 09-51-51.mp4\\\"\""
             //"-c \"Command Prompt\" -o \"CMD.exe\""
+
+            string args = "";
+            if (!String.IsNullOrEmpty(Options.windowName.Value))
+                args += " -c \"" + Options.windowName.Value + "\"";
+            if (!String.IsNullOrEmpty(Options.processName.Value))
+                args += " -p \"" + Options.processName.Value + "\"";
+            if (!String.IsNullOrEmpty(Options.openProgram.Value))
+                args += " -o \"" + Options.openProgram.Value + "\"";
+            if (!String.IsNullOrEmpty(Options.openProgramArguments.Value))
+                args += " -a \"" + Options.openProgramArguments.Value + "\"";
+            args += " -f \"" + Options.framerate.Value.ToString() + "\"";
+
+            Plugin.ME.Logger_p.LogInfo("Capture, Arguments: \"" + args + "\"");
 
             adjusting.showMediaPos = new Vector2(midX, midY);
 

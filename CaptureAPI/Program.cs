@@ -47,6 +47,8 @@ namespace CaptureAPI
                         if (!(++i < args.Length))
                             break;
                         int fps = Int32.Parse(args[i]);
+                        if (fps <= 0)
+                            fps = 1;
                         interval = new TimeSpan(10000000 / fps);
                         break;
                 }
