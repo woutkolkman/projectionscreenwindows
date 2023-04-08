@@ -37,6 +37,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="CreateGamePNGs.cs" />
+    <Compile Include="Options.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Hooks.cs" />
     <Compile Include="Capture.cs" />
@@ -68,7 +69,6 @@
       <HintPath>..\..\references\PUBLIC-Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.Drawing" />
     <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\references\UnityEngine.dll</HintPath>

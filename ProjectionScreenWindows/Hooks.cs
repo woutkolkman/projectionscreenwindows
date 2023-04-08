@@ -9,6 +9,9 @@ namespace ProjectionScreenWindows
     {
         public static void Apply()
         {
+            //initialize options
+            On.RainWorld.OnModsInit += RainWorldOnModsInitHook;
+
             //replace all SS games with Capture
             IDetour detourSSGetNewFPGame = new Hook(
                 typeof(FivePebblesPong.Plugin).GetMethod("SSGetNewFPGame", BindingFlags.Static | BindingFlags.Public),
@@ -26,37 +29,63 @@ namespace ProjectionScreenWindows
                 typeof(FivePebblesPong.Plugin).GetMethod("SLGetNewFPGame", BindingFlags.Static | BindingFlags.Public),
                 typeof(Hooks).GetMethod("FivePebblesPongPlugin_SLGetNewFPGame_RuntimeDetour", BindingFlags.Static | BindingFlags.Public)
             );
+
+            //add game to gamelist
+            gameNrCapture = FivePebblesPong.Plugin.amountOfGames;
+            FivePebblesPong.Plugin.amountOfGames++;
         }
 
 
         public static void Unapply()
         {
             //TODO
+
+            //remove from gamelist
+            if (FivePebblesPong.Plugin.amountOfGames > gameNrCapture)
+                FivePebblesPong.Plugin.amountOfGames--;
+            gameNrCapture = -1;
         }
 
 
+        //initialize options
+        static void RainWorldOnModsInitHook(On.RainWorld.orig_OnModsInit orig, RainWorld self)
+        {
+            orig(self);
+            MachineConnector.SetRegisteredOI(Plugin.ME.GUID, new Options());
+        }
+
+
+        static int gameNrCapture = -1;
         [MethodImpl(MethodImplOptions.NoInlining)]
         public static FivePebblesPong.FPGame FivePebblesPongPlugin_SSGetNewFPGame_RuntimeDetour(Func<SSOracleBehavior, int, FivePebblesPong.FPGame> orig, SSOracleBehavior ob, int nr)
         {
-            return new Capture(ob);
+            if (Options.overrideAllGames.Value)
+                return new Capture(ob);
+
+            if (FivePebblesPong.Plugin.amountOfGames != 0 &&                //divide by 0 safety
+                gameNrCapture >= 0 &&                                       //game is added to list
+                nr % FivePebblesPong.Plugin.amountOfGames == gameNrCapture) //correct pearl is grabbed
+                return new Capture(ob);
+
+            return orig(ob, nr);
         }
 
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         public static FivePebblesPong.FPGame FivePebblesPongPlugin_RMGetNewFPGame_RuntimeDetour(Func<MoreSlugcats.SSOracleRotBehavior, FivePebblesPong.FPGame> orig, MoreSlugcats.SSOracleRotBehavior ob)
         {
-            return new Capture(ob);
+            if (Options.overrideAllGames.Value)
+                return new Capture(ob);
+            return orig(ob);
         }
 
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         public static FivePebblesPong.FPGame FivePebblesPongPlugin_SLGetNewFPGame_RuntimeDetour(Func<SLOracleBehavior, FivePebblesPong.FPGame> orig, SLOracleBehavior ob)
         {
-            if (ob.oracle.room.game.IsMoonHeartActive()) {
+            if (Options.overrideAllGames.Value)
                 return new Capture(ob);
-            } else {
-                return orig(ob);
-            }
+            return orig(ob);
         }
     }
 }
