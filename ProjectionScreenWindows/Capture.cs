@@ -11,7 +11,6 @@ namespace ProjectionScreenWindows
 {
     public class Capture : FivePebblesPong.FPGame
     {
-        public bool adjustingWindow = true; //controls if windows will be moved randomly
         Process captureProcess;
         public int frame = 0;
         public DateTime measureFps = DateTime.Now;
@@ -164,7 +163,8 @@ namespace ProjectionScreenWindows
             if (self is MoreSlugcats.SSOracleRotBehavior && (self as MoreSlugcats.SSOracleRotBehavior).holdingObject is FivePebblesPong.GameController)
                 self.lookPoint = adjusting.showMediaPos;
 
-            adjusting.Update(self, new Vector2(midX, midY), !adjustingWindow);
+            if (Options.moveRandomly.Value || new Vector2(midX, midY) != adjusting.showMediaPos)
+                adjusting.Update(self, new Vector2(midX, midY), !Options.moveRandomly.Value);
 
             if (imgLoiter.Count >= IMG_LOITER_COUNT) {
                 ProjectedImage img = imgLoiter.Dequeue();
@@ -232,9 +232,9 @@ namespace ProjectionScreenWindows
 
         public override void Draw(Vector2 offset)
         {
-            //update (only first) image position
-            if (imgLoiter.Count > 0)
-                imgLoiter.Peek().pos = adjusting.showMediaPos - offset;
+            //update all image positions
+            foreach (ProjectedImage img in imgLoiter)
+                img.pos = adjusting.showMediaPos - (Options.ignoreOrigPos.Value ? new Vector2() : offset);
         }
 
 

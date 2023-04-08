@@ -7,7 +7,7 @@ namespace ProjectionScreenWindows
     //and: https://github.com/SchuhBaum/SBCameraScroll/blob/Rain-World-v1.9/SourceCode/MainModOptions.cs
     public class Options : OptionInterface
     {
-        public static Configurable<bool> overrideAllGames;
+        public static Configurable<bool> overrideAllGames, ignoreOrigPos, moveRandomly;
         public static Configurable<string> windowName, processName, openProgram, openProgramArguments;
         public static Configurable<int> framerate;
 
@@ -15,6 +15,8 @@ namespace ProjectionScreenWindows
         public Options()
         {
             overrideAllGames = config.Bind("overrideAllGames", defaultValue: true, new ConfigurableInfo("When unchecked, RM & SL Pong are accessible and all original games can be played.", null, "", "Replace all games"));
+            ignoreOrigPos = config.Bind("ignoreOrigPos", defaultValue: false, new ConfigurableInfo("When unchecked, RM screen has a glitch animation.", null, "", "Ignore original position"));
+            moveRandomly = config.Bind("moveRandomly", defaultValue: true, new ConfigurableInfo("When checked, the window position is constantly adjusted.", null, "", "Move randomly"));
             framerate = config.Bind("framerate", defaultValue: 40, new ConfigurableInfo("Setpoint for maximum capture framerate.", new ConfigAcceptableRange<int>(1, 60), "", "Framerate setpoint"));
             windowName = config.Bind("windowName", defaultValue: "", new ConfigurableInfo("Program will match a window name with a process name. Leave empty to only search for process name.\nExamples:    Notepad    Command Prompt    VLC media player", null, "", "Window name"));
             processName = config.Bind("processName", defaultValue: "", new ConfigurableInfo("Program will match a window name with a process name. Leave empty to only search for window name.\nExamples:    notepad    cmd    vlc", null, "", "Process name"));
@@ -34,7 +36,9 @@ namespace ProjectionScreenWindows
             AddTitle();
             float height = 540f;
             AddCheckbox(overrideAllGames, new Vector2(20f, height -= 40f));
+            AddCheckbox(ignoreOrigPos, new Vector2(320f, height));
             AddDragger(framerate, new Vector2(20f, height -= 40f));
+            AddCheckbox(moveRandomly, new Vector2(320f, height));
             AddTextbox(windowName, new Vector2(20f, height -= 40f));
             AddTextbox(processName, new Vector2(20f, height -= 40f));
             AddTextbox(openProgram, new Vector2(20f, height -= 40f), 460f);
@@ -75,7 +79,7 @@ namespace ProjectionScreenWindows
         }
 
 
-        private void AddTextbox(Configurable<string> option, Vector2 pos, float width = 100f)
+        private void AddTextbox(Configurable<string> option, Vector2 pos, float width = 150f)
         {
             OpTextBox textbox = new OpTextBox(option, pos, width)
             {
