@@ -15,10 +15,10 @@ namespace ProjectionScreenWindows
         public Options()
         {
             overrideAllGames = config.Bind("overrideAllGames", defaultValue: true, new ConfigurableInfo("When unchecked, RM & SL Pong are accessible and all original games can be played.", null, "", "Replace all games"));
-            windowName = config.Bind("windowName", defaultValue: "", new ConfigurableInfo("Program will match a window name with a process name. Leave empty to only search for process name.\nExamples:    Notepad    Command Prompt", null, "", "Window name"));
-            processName = config.Bind("processName", defaultValue: "notepad", new ConfigurableInfo("Program will match a window name with a process name. Leave empty to only search for window name.\nExamples:    notepad    cmd", null, "", "Process name"));
-            openProgram = config.Bind("openProgram", defaultValue: "notepad", new ConfigurableInfo("If no window was found, the program will try to open a program once. Leave empty to ignore.\nExamples:    notepad    CMD.exe", null, "", "Open program"));
-            openProgramArguments = config.Bind("openProgramArguments", defaultValue: "", new ConfigurableInfo("Arguments to pass when opening a program.", null, "", "Arguments"));
+            windowName = config.Bind("windowName", defaultValue: "", new ConfigurableInfo("Program will match a window name with a process name. Leave empty to only search for process name.\nExamples:    Notepad    Command Prompt    VLC media player", null, "", "Window name"));
+            processName = config.Bind("processName", defaultValue: "", new ConfigurableInfo("Program will match a window name with a process name. Leave empty to only search for window name.\nExamples:    notepad    cmd    vlc", null, "", "Process name"));
+            openProgram = config.Bind("openProgram", defaultValue: "", new ConfigurableInfo("If no window was found, the program will try to open a program once. Leaving this empty will not start any program.\nExamples:    notepad    CMD.exe    C:\\Program Files\\VideoLAN\\VLC\\vlc.exe", null, "", "Open program"));
+            openProgramArguments = config.Bind("openProgramArguments", defaultValue: "", new ConfigurableInfo("Arguments to pass when opening a program.\nExamples:    \\\"\\\"C:\\vids folder\\pebbsi.mp4\\\"\\\"", null, "", "Arguments"));
             framerate = config.Bind("framerate", defaultValue: 40, new ConfigurableInfo("Setpoint for maximum capture framerate.", new ConfigAcceptableRange<int>(1, 60), "", "Framerate setpoint"));
         }
 
@@ -26,6 +26,7 @@ namespace ProjectionScreenWindows
         public override void Initialize()
         {
             base.Initialize();
+
             Tabs = new OpTab[]
             {
                 new OpTab(this, "Options")
@@ -77,6 +78,8 @@ namespace ProjectionScreenWindows
         {
             OpTextBox textbox = new OpTextBox(option, new Vector2(210f, y), width)
             {
+                allowSpace = true,
+                maxLength = 8191, //max total length cmd commands
                 description = option.info.description
             };
 
