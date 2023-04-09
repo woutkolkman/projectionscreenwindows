@@ -10,6 +10,7 @@ namespace ProjectionScreenWindows
         public static Configurable<bool> overrideAllGames, ignoreOrigPos, moveRandomly;
         public static Configurable<string> windowName, processName, openProgram, openProgramArguments;
         public static Configurable<int> framerate, cropLeft, cropBottom, cropRight, cropTop;
+        public int curTab;
 
 
         public Options()
@@ -34,11 +35,14 @@ namespace ProjectionScreenWindows
         {
             base.Initialize();
 
+            curTab = 0;
             Tabs = new OpTab[]
             {
-                new OpTab(this, "Options")
+                new OpTab(this, "General"),
+                new OpTab(this, "Positioning")
             };
             AddTitle();
+            float mid(float size) { return 300f - (size / 2); } //both X and Y
             float height = 540f;
             AddCheckbox(overrideAllGames, new Vector2(20f, height -= 40f));
             AddCheckbox(ignoreOrigPos, new Vector2(320f, height));
@@ -49,10 +53,12 @@ namespace ProjectionScreenWindows
             AddTextbox(openProgram, new Vector2(20f, height -= 40f), 460f);
             AddTextbox(openProgramArguments, new Vector2(20f, height -= 40f), 460f);
 
-            AddUpDown(cropTop, new Vector2(170f, height -= 40f));
-            AddUpDown(cropLeft, new Vector2(20f, height -= 40f));
-            AddUpDown(cropRight, new Vector2(320f, height));
-            AddUpDown(cropBottom, new Vector2(170f, height -= 40f));
+            height = 540f;
+            curTab++;
+            AddUpDown(cropTop, new Vector2(mid(60f), height -= 40f));
+            AddUpDown(cropLeft, new Vector2(mid(60f) - 140f, height -= 40f));
+            AddUpDown(cropRight, new Vector2(mid(60f) + 140f, height));
+            AddUpDown(cropBottom, new Vector2(mid(60f), height -= 40f));
         }
 
 
@@ -61,7 +67,7 @@ namespace ProjectionScreenWindows
             OpLabel title = new OpLabel(new Vector2(150f, 560f), new Vector2(300f, 30f), Plugin.ME.Name, bigText: true);
             OpLabel version = new OpLabel(new Vector2(150f, 540f), new Vector2(300f, 30f), $"Version {Plugin.ME.Version}");
 
-            Tabs[0].AddItems(new UIelement[]
+            Tabs[curTab].AddItems(new UIelement[]
             {
                 title,
                 version
@@ -81,7 +87,7 @@ namespace ProjectionScreenWindows
                 description = option.info.description
             };
 
-            Tabs[0].AddItems(new UIelement[]
+            Tabs[curTab].AddItems(new UIelement[]
             {
                 checkbox,
                 label
@@ -103,7 +109,7 @@ namespace ProjectionScreenWindows
                 description = option.info.description
             };
 
-            Tabs[0].AddItems(new UIelement[]
+            Tabs[curTab].AddItems(new UIelement[]
             {
                 textbox,
                 label
@@ -123,7 +129,7 @@ namespace ProjectionScreenWindows
                 description = option.info.description
             };
 
-            Tabs[0].AddItems(new UIelement[]
+            Tabs[curTab].AddItems(new UIelement[]
             {
                 dragger,
                 label
@@ -143,7 +149,7 @@ namespace ProjectionScreenWindows
                 description = option.info.description
             };
 
-            Tabs[0].AddItems(new UIelement[]
+            Tabs[curTab].AddItems(new UIelement[]
             {
                 updown,
                 label
