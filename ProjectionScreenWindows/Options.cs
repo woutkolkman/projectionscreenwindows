@@ -1,5 +1,6 @@
 ﻿using Menu.Remix.MixedUI;
 using System;
+using System.IO;
 using UnityEngine;
 
 namespace ProjectionScreenWindows
@@ -12,7 +13,7 @@ namespace ProjectionScreenWindows
         public static Configurable<string> windowName, processName, openProgram, openProgramArguments;
         public static Configurable<int> framerate, cropLeft, cropBottom, cropRight, cropTop;
         public static OpSimpleButton testButton;
-        public static OpImage testFrame;
+        public static OpImage testFrame, backgroundImg;
         public int curTab;
 
 
@@ -24,7 +25,7 @@ namespace ProjectionScreenWindows
             framerate = config.Bind("framerate", defaultValue: 40, new ConfigurableInfo("Setpoint for maximum capture framerate.", new ConfigAcceptableRange<int>(1, 60), "", "Framerate setpoint"));
             windowName = config.Bind("windowName", defaultValue: "", new ConfigurableInfo("Program will match a window name with a process name. Leave empty to only search for process name.\nExamples:    Notepad    Command Prompt    VLC media player", null, "", "Window name"));
             processName = config.Bind("processName", defaultValue: "", new ConfigurableInfo("Program will match a window name with a process name. Leave empty to only search for window name.\nExamples:    notepad    cmd    vlc", null, "", "Process name"));
-            openProgram = config.Bind("openProgram", defaultValue: "", new ConfigurableInfo("If no window was found, the program will try to open a program once. Leaving this empty will not start any program.\nExamples:    notepad    CMD.exe    C:\\Program Files\\VideoLAN\\VLC\\vlc.exe", null, "", "Open program"));
+            openProgram = config.Bind("openProgram", defaultValue: "", new ConfigurableInfo("If no window was found, the program will try to open a program once. It will also be closed afterwards. Leaving this empty will not start or stop any program.\nExamples:    notepad    CMD.exe    C:\\Program Files\\VideoLAN\\VLC\\vlc.exe", null, "", "Open program"));
             openProgramArguments = config.Bind("openProgramArguments", defaultValue: "", new ConfigurableInfo("Arguments to pass when opening a program.\nExamples:    /?    \\\"\\\"C:\\vids folder\\pebbsi.mp4\\\"\\\"", null, "", "Arguments"));
 
             cropLeft = config.Bind("cropLeft", defaultValue: 0, new ConfigurableInfo("Crop left of frames (pixels). No performance loss.\nExamples:    (Notepad) 1    (VLC) 1    (CMD) 1", new ConfigAcceptableRange<int>(0, int.MaxValue), "", "Crop left"));
@@ -42,7 +43,7 @@ namespace ProjectionScreenWindows
             Tabs = new OpTab[]
             {
                 new OpTab(this, "General"),
-                new OpTab(this, "Positioning"),
+                new OpTab(this, "Position"),
                 new OpTab(this, "Test")
             };
             AddTitle();
@@ -65,11 +66,19 @@ namespace ProjectionScreenWindows
             AddUpDown(cropBottom, new Vector2(mid(60f), height -= 40f));
 
             curTab++;
+            string str = AssetManager.ResolveFilePath("Illustrations" + Path.DirectorySeparatorChar.ToString() + "pebbles_can_centered_600x600.png");
+            Texture2D tex = new Texture2D(1, 1, TextureFormat.ARGB32, false);
+            try {
+                AssetManager.SafeWWWLoadTexture(ref tex, "file:///" + str, false, true);
+            } catch (Exception e) {
+                Plugin.ME.Logger_p.LogError(e.ToString());
+            }
+            backgroundImg = new OpImage(new Vector2(), tex);
             testFrame = new OpImage(new Vector2(mid(1f), mid(1f)), Texture2D.whiteTexture);
             testButton = new OpSimpleButton(new Vector2(mid(60f), 20f), new Vector2(60f, 40f), "Test");
             testButton.OnClick += TestButtonOnClickHandler;
-            testButton.OnReactivate += TestButtonOnReactivateHandler;
-            Tabs[curTab].AddItems(new UIelement[] { testFrame, testButton });
+            testButton.OnReactivate += TestButtonUpdate;
+            Tabs[curTab].AddItems(new UIelement[] { backgroundImg, testFrame, testButton });
 
             this.OnDeactivate += () => { testActive = false; };
         }
@@ -174,9 +183,9 @@ namespace ProjectionScreenWindows
         private void TestButtonOnClickHandler(UIfocusable _)
         {
             testActive = !testActive;
-            TestButtonOnReactivateHandler();
+            TestButtonUpdate();
         }
-        private void TestButtonOnReactivateHandler()
+        private void TestButtonUpdate()
         {
             testButton.text = testActive ? "Cancel" : "Test";
             testButton.colorFill = testActive ? Color.red : Color.black;
