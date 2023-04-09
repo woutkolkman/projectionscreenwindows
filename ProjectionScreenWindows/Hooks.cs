@@ -64,17 +64,20 @@ namespace ProjectionScreenWindows
         {
             orig(self);
 
-            if (Options.testActive && testCapture == null)
-                Futile.atlasManager?.LogAllElementNames();
-
             if (Options.testActive && Options.testFrame != null) {
                 if (testCapture == null)
                     testCapture = new Capture(null);
+
                 Texture2D newFrame = testCapture?.GetNewFrame();
                 if (newFrame != null) {
                     Options.testFrame.ChangeImage(newFrame);
                     Options.testFrame.pos = new Vector2(300f - newFrame.width/2, 300f - newFrame.height/2);
                 }
+
+                //memory leak "fix" (probably FSprite after ChangeImage call)
+                if (testCapture.frame > 0 && testCapture.frame % 100 == 0)
+                    FTexture.GarbageCollect(); //memory is also freed when exiting Remix menu
+
             } else {
                 testCapture?.Destroy();
                 testCapture = null;

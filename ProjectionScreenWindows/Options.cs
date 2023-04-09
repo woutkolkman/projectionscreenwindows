@@ -1,4 +1,5 @@
 ﻿using Menu.Remix.MixedUI;
+using System;
 using UnityEngine;
 
 namespace ProjectionScreenWindows
@@ -67,7 +68,10 @@ namespace ProjectionScreenWindows
             testFrame = new OpImage(new Vector2(mid(1f), mid(1f)), Texture2D.whiteTexture);
             testButton = new OpSimpleButton(new Vector2(mid(60f), 20f), new Vector2(60f, 40f), "Test");
             testButton.OnClick += TestButtonOnClickHandler;
+            testButton.OnReactivate += TestButtonOnReactivateHandler;
             Tabs[curTab].AddItems(new UIelement[] { testFrame, testButton });
+
+            this.OnDeactivate += () => { testActive = false; };
         }
 
 
@@ -170,6 +174,10 @@ namespace ProjectionScreenWindows
         private void TestButtonOnClickHandler(UIfocusable _)
         {
             testActive = !testActive;
+            TestButtonOnReactivateHandler();
+        }
+        private void TestButtonOnReactivateHandler()
+        {
             testButton.text = testActive ? "Cancel" : "Test";
             testButton.colorFill = testActive ? Color.red : Color.black;
         }

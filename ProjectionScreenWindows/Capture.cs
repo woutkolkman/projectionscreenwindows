@@ -177,7 +177,7 @@ namespace ProjectionScreenWindows
             if (newFrame == null)
                 return;
 
-            string imgName = "FPP_Window_" + frame++;
+            string imgName = "FPP_Window_" + frame;
             //Plugin.ME.Logger_p.LogInfo("Capture.Update, Creating: \"" + imgName + "\"");
 
             //load and display new frame
@@ -214,7 +214,7 @@ namespace ProjectionScreenWindows
 
             //get new frame and save
             if (!imgLoadMtx.WaitOne(50)) {
-                Plugin.ME.Logger_p.LogInfo("Capture.Update, Mutex timeout");
+                Plugin.ME.Logger_p.LogInfo("Capture.GetNewFrame, Mutex timeout");
                 return null;
             }
             Texture2D newFrame = new Texture2D(0, 0);
@@ -222,7 +222,7 @@ namespace ProjectionScreenWindows
                 byte[] imageBase64 = imgLoad.Dequeue();
                 newFrame.LoadImage(imageBase64);
             } catch (Exception ex) {
-                Plugin.ME.Logger_p.LogInfo("Capture.Update, Error storing data: " + ex.ToString());
+                Plugin.ME.Logger_p.LogInfo("Capture.GetNewFrame, Error storing data: " + ex.ToString());
             }
             imgLoadMtx.ReleaseMutex();
 
@@ -233,6 +233,7 @@ namespace ProjectionScreenWindows
             texLoiter.Enqueue(newFrame); //prevents memory leak
 
             newFrame = CreateGamePNGs.AddTransparentBorder(ref newFrame, cropFrames);
+            frame++;
             return newFrame;
         }
 
