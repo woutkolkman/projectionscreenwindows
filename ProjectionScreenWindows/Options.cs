@@ -13,7 +13,7 @@ namespace ProjectionScreenWindows
         public static Configurable<string> windowName, processName, openProgram, openProgramArguments;
         public static Configurable<int> framerate, cropLeft, cropBottom, cropRight, cropTop;
         public static OpSimpleButton testButton;
-        public static OpImage testFrame, backgroundImg;
+        public static OpImage testFrame;
         public int curTab;
 
 
@@ -47,12 +47,10 @@ namespace ProjectionScreenWindows
                 new OpTab(this, "Test")
             };
             AddTitle();
-            float mid(float size) { return 300f - (size / 2); } //both X and Y
+            float mid(float size = 0f) { return 300f - (size / 2); } //both X and Y
             float height = 540f;
             AddCheckbox(overrideAllGames, new Vector2(20f, height -= 40f));
-            AddCheckbox(ignoreOrigPos, new Vector2(320f, height));
             AddDragger(framerate, new Vector2(20f, height -= 40f));
-            AddCheckbox(moveRandomly, new Vector2(320f, height));
             AddTextbox(windowName, new Vector2(20f, height -= 40f));
             AddTextbox(processName, new Vector2(20f, height -= 40f));
             AddTextbox(openProgram, new Vector2(20f, height -= 40f), 460f);
@@ -60,10 +58,12 @@ namespace ProjectionScreenWindows
 
             height = 540f;
             curTab++;
-            AddUpDown(cropTop, new Vector2(mid(60f), height -= 40f));
-            AddUpDown(cropLeft, new Vector2(mid(60f) - 140f, height -= 40f));
+            AddCheckbox(ignoreOrigPos, new Vector2(20f, height -= 40f));
+            AddCheckbox(moveRandomly, new Vector2(20f, height -= 40f));
+            AddUpDown(cropTop, new Vector2(mid(60f), height = mid() + 50f));
+            AddUpDown(cropLeft, new Vector2(mid(60f) - 140f, height -= 50f));
             AddUpDown(cropRight, new Vector2(mid(60f) + 140f, height));
-            AddUpDown(cropBottom, new Vector2(mid(60f), height -= 40f));
+            AddUpDown(cropBottom, new Vector2(mid(60f), height -= 50f));
 
             curTab++;
             string str = AssetManager.ResolveFilePath("Illustrations" + Path.DirectorySeparatorChar.ToString() + "pebbles_can_centered_600x600.png");
@@ -73,12 +73,19 @@ namespace ProjectionScreenWindows
             } catch (Exception e) {
                 Plugin.ME.Logger_p.LogError(e.ToString());
             }
-            backgroundImg = new OpImage(new Vector2(), tex);
+            OpImage backgroundImg = new OpImage(new Vector2(), tex);
+            OpLabel tipsText = new OpLabel(new Vector2(mid(), 500f), new Vector2(), text:
+                "Tips:\n- Apply changes before testing.\n- Any issues? " +
+                "Check BepInEx logs located in \"Rain World\\BepInEx\\LogOutput.log\", " +
+                "\nor enable a console window in \"Rain World\\BepInEx\\config\\BepInEx.cfg\"." +
+                "\n- Always enter a window or process name, else any process will match."
+            );
+
             testFrame = new OpImage(new Vector2(mid(1f), mid(1f)), Texture2D.whiteTexture);
             testButton = new OpSimpleButton(new Vector2(mid(60f), 20f), new Vector2(60f, 40f), "Test");
             testButton.OnClick += TestButtonOnClickHandler;
             testButton.OnReactivate += TestButtonUpdate;
-            Tabs[curTab].AddItems(new UIelement[] { backgroundImg, testFrame, testButton });
+            Tabs[curTab].AddItems(new UIelement[] { backgroundImg, tipsText, testFrame, testButton });
 
             this.OnDeactivate += () => { testActive = false; };
         }

@@ -65,8 +65,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\references\MonoMod.Utils.dll</HintPath>
     </Reference>
-    <Reference Include="PUBLIC-Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="PUBLIC-Assembly-CSharp">
       <HintPath>..\..\references\PUBLIC-Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="STRIPPED-Assembly-CSharp">
