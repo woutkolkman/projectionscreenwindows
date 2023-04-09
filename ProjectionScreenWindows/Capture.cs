@@ -47,7 +47,7 @@ namespace ProjectionScreenWindows
             adjusting.showMediaPos = new Vector2(midX, midY);
 
             //create OracleProjectionScreen in case of no projectionscreen
-            if (self.oracle.myScreen == null)
+            if (self?.oracle != null && self.oracle.myScreen == null)
                 self.oracle.myScreen = new OracleProjectionScreen(self.oracle.room, self);
 
             string assemblyFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
@@ -169,39 +169,14 @@ namespace ProjectionScreenWindows
                 img.Destroy();
             }
 
-            if (texLoiter.Count >= IMG_LOITER_COUNT) { //prevents memory leak
-                Texture2D tex = texLoiter.Dequeue();
-                if (tex != null)
-                    Texture2D.Destroy(tex);
-            }
-
             if (imgUnload.Count >= IMG_UNLOAD_AT_COUNT)
                 Futile.atlasManager.ActuallyUnloadAtlasOrImage(imgUnload.Dequeue());
 
-            if (imgLoad.Count <= 0)
+            //get new frame if available
+            Texture2D newFrame = GetNewFrame();
+            if (newFrame == null)
                 return;
 
-            //get new frame and save
-            if (!imgLoadMtx.WaitOne(50)) {
-                Plugin.ME.Logger_p.LogInfo("Capture.Update, Mutex timeout");
-                return;
-            }
-            Texture2D newFrame = new Texture2D(0, 0);
-            try {
-                byte[] imageBase64 = imgLoad.Dequeue();
-                newFrame.LoadImage(imageBase64);
-            } catch (Exception ex) {
-                Plugin.ME.Logger_p.LogInfo("Capture.Update, Error storing data: " + ex.ToString());
-            }
-            imgLoadMtx.ReleaseMutex();
-
-            if (newFrame?.width <= 0 || newFrame.height <= 0) {
-                Texture2D.Destroy(newFrame);
-                return;
-            }
-            texLoiter.Enqueue(newFrame); //prevents memory leak
-
-            newFrame = CreateGamePNGs.AddTransparentBorder(ref newFrame, cropFrames);
             string imgName = "FPP_Window_" + frame++;
             //Plugin.ME.Logger_p.LogInfo("Capture.Update, Creating: \"" + imgName + "\"");
 
@@ -222,6 +197,43 @@ namespace ProjectionScreenWindows
                 frame = 0;
                 measureFps = DateTime.Now;
             }
+        }
+
+
+        //parses new frame from buffer and returns the parsed & cropped image or null
+        public Texture2D GetNewFrame()
+        {
+            if (texLoiter.Count >= IMG_LOITER_COUNT) { //prevents memory leak
+                Texture2D tex = texLoiter.Dequeue();
+                if (tex != null)
+                    Texture2D.Destroy(tex);
+            }
+
+            if (imgLoad.Count <= 0)
+                return null;
+
+            //get new frame and save
+            if (!imgLoadMtx.WaitOne(50)) {
+                Plugin.ME.Logger_p.LogInfo("Capture.Update, Mutex timeout");
+                return null;
+            }
+            Texture2D newFrame = new Texture2D(0, 0);
+            try {
+                byte[] imageBase64 = imgLoad.Dequeue();
+                newFrame.LoadImage(imageBase64);
+            } catch (Exception ex) {
+                Plugin.ME.Logger_p.LogInfo("Capture.Update, Error storing data: " + ex.ToString());
+            }
+            imgLoadMtx.ReleaseMutex();
+
+            if (newFrame?.width <= 0 || newFrame.height <= 0) {
+                Texture2D.Destroy(newFrame);
+                return null;
+            }
+            texLoiter.Enqueue(newFrame); //prevents memory leak
+
+            newFrame = CreateGamePNGs.AddTransparentBorder(ref newFrame, cropFrames);
+            return newFrame;
         }
 
 

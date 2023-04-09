@@ -10,6 +10,8 @@ namespace ProjectionScreenWindows
         public static Configurable<bool> overrideAllGames, ignoreOrigPos, moveRandomly;
         public static Configurable<string> windowName, processName, openProgram, openProgramArguments;
         public static Configurable<int> framerate, cropLeft, cropBottom, cropRight, cropTop;
+        public static OpSimpleButton testButton;
+        public static OpImage testFrame;
         public int curTab;
 
 
@@ -39,7 +41,8 @@ namespace ProjectionScreenWindows
             Tabs = new OpTab[]
             {
                 new OpTab(this, "General"),
-                new OpTab(this, "Positioning")
+                new OpTab(this, "Positioning"),
+                new OpTab(this, "Test")
             };
             AddTitle();
             float mid(float size) { return 300f - (size / 2); } //both X and Y
@@ -59,6 +62,12 @@ namespace ProjectionScreenWindows
             AddUpDown(cropLeft, new Vector2(mid(60f) - 140f, height -= 40f));
             AddUpDown(cropRight, new Vector2(mid(60f) + 140f, height));
             AddUpDown(cropBottom, new Vector2(mid(60f), height -= 40f));
+
+            curTab++;
+            testFrame = new OpImage(new Vector2(mid(1f), mid(1f)), Texture2D.whiteTexture);
+            testButton = new OpSimpleButton(new Vector2(mid(60f), 20f), new Vector2(60f, 40f), "Test");
+            testButton.OnClick += TestButtonOnClickHandler;
+            Tabs[curTab].AddItems(new UIelement[] { testFrame, testButton });
         }
 
 
@@ -154,6 +163,15 @@ namespace ProjectionScreenWindows
                 updown,
                 label
             });
+        }
+
+
+        public static bool testActive = false;
+        private void TestButtonOnClickHandler(UIfocusable _)
+        {
+            testActive = !testActive;
+            testButton.text = testActive ? "Cancel" : "Test";
+            testButton.colorFill = testActive ? Color.red : Color.black;
         }
     }
 }

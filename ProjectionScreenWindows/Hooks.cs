@@ -2,6 +2,7 @@
 using System.Reflection;
 using MonoMod.RuntimeDetour;
 using System.Runtime.CompilerServices;
+using UnityEngine;
 
 namespace ProjectionScreenWindows
 {
@@ -11,6 +12,9 @@ namespace ProjectionScreenWindows
         {
             //initialize options
             On.RainWorld.OnModsInit += RainWorldOnModsInitHook;
+
+            //test in options menu
+            On.RainWorld.Update += RainWorldUpdateHook;
 
             //replace all SS games with Capture
             IDetour detourSSGetNewFPGame = new Hook(
@@ -52,6 +56,29 @@ namespace ProjectionScreenWindows
         {
             orig(self);
             MachineConnector.SetRegisteredOI(Plugin.ME.GUID, new Options());
+        }
+
+
+        static Capture testCapture = null;
+        static void RainWorldUpdateHook(On.RainWorld.orig_Update orig, RainWorld self)
+        {
+            orig(self);
+
+            if (Options.testActive && testCapture == null)
+                Futile.atlasManager?.LogAllElementNames();
+
+            if (Options.testActive && Options.testFrame != null) {
+                if (testCapture == null)
+                    testCapture = new Capture(null);
+                Texture2D newFrame = testCapture?.GetNewFrame();
+                if (newFrame != null) {
+                    Options.testFrame.ChangeImage(newFrame);
+                    Options.testFrame.pos = new Vector2(300f - newFrame.width/2, 300f - newFrame.height/2);
+                }
+            } else {
+                testCapture?.Destroy();
+                testCapture = null;
+            }
         }
 
 

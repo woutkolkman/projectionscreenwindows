@@ -18,6 +18,7 @@ Add references to files as described in the guide above:
 - MonoMod.RuntimeDetour.dll
 - MonoMod.Utils.dll
 - FivePebblesPong.dll (not in RW folder)
+- STRIPPED-Assembly-CSharp.dll (get from the [Rain World Discord](https://discord.com/channels/291184728944410624/305139167300550666/1065819691865620540))
 
 The files can be found in the Rain World folder. You can copy and store these, for example, in a folder "references" next to the folder containing this source code.
 
