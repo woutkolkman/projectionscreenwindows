@@ -7,7 +7,7 @@ using System.Drawing;
 namespace CaptureAPI
 {
     //not my code, but from http://improve.dk/finding-specific-windows/ & https://improve.dk/getting-window-location-and-size/
-#pragma warning disable CS8625
+
     public class WindowFinder
     {
         const int TIMEOUT = 5; //seconds
@@ -58,7 +58,7 @@ namespace CaptureAPI
                 Console.WriteLine("[" + DateTime.Now.TimeOfDay + "] GetWindowHandle, Window \"" + windowName + "\" and/or process \"" + processName + "\" not found");
             return result;
         }
-#pragma warning restore CS8625
+
 
         // Win32 constants.
         const int WM_GETTEXT = 0x000D;
