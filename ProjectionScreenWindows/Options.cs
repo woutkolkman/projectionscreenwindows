@@ -9,7 +9,7 @@ namespace ProjectionScreenWindows
     //and: https://github.com/SchuhBaum/SBCameraScroll/blob/Rain-World-v1.9/SourceCode/MainModOptions.cs
     public class Options : OptionInterface
     {
-        public static Configurable<bool> overrideAllGames, ignoreOrigPos, moveRandomly;
+        public static Configurable<bool> overrideAllGames, ignoreOrigPos, moveRandomly, altOpenProgram;
         public static Configurable<string> windowName, processName, openProgram, openProgramArguments, positionType;
         public static Configurable<int> framerate, cropLeft, cropBottom, cropRight, cropTop;
         public static Configurable<float> offsetPosX, offsetPosY;
@@ -36,6 +36,7 @@ namespace ProjectionScreenWindows
             processName = config.Bind("processName", defaultValue: "", new ConfigurableInfo("Program will match a window name with a process name. Leave empty to only search for window name.\nExamples:    notepad    cmd    vlc", null, "", "Process name"));
             openProgram = config.Bind("openProgram", defaultValue: "", new ConfigurableInfo("If no window was found, the program will try to open a program once. It will also be closed afterwards. Leaving this empty will not start or stop any program.\nExamples:    notepad    CMD.exe    C:\\Program Files\\VideoLAN\\VLC\\vlc.exe", null, "", "Open program"));
             openProgramArguments = config.Bind("openProgramArguments", defaultValue: "", new ConfigurableInfo("Arguments to pass when opening a program.\nExamples:    /?    \\\"\\\"C:\\vids folder\\pebbsi.mp4\\\"\\\"", null, "", "Arguments"));
+            altOpenProgram = config.Bind("altOpenProgram", defaultValue: false, new ConfigurableInfo("Program is opened with another method, so the game doesn't lose focus. Programs also won't close automatically afterwards.", null, "", "Don't lose focus"));
 
             positionType = config.Bind("positionType", defaultValue: PositionTypes.Middle.ToString(), new ConfigurableInfo("Target position for the window. Not actual position, because this is influenced by other options.", null, "", "Position type"));
             offsetPosX = config.Bind("offsetPosX", defaultValue: 0f, new ConfigurableInfo("Always offset window position (X) by this ammount. -7.5 makes image align with background. Positive values will move right.", null, "", "Offset position X"));
@@ -72,6 +73,7 @@ namespace ProjectionScreenWindows
             AddTextbox(processName, new Vector2(20f, height -= 40f));
             AddTextbox(openProgram, new Vector2(20f, height -= 40f), 460f);
             AddTextbox(openProgramArguments, new Vector2(20f, height -= 40f), 460f);
+            AddCheckbox(altOpenProgram, new Vector2(20f, height -= 40f));
             /*****************************************/
 
             /*************** Position ****************/

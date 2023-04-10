@@ -37,15 +37,18 @@ namespace ProjectionScreenWindows
         public Capture(OracleBehavior self) : base(self)
         {
             string args = "";
-            if (!String.IsNullOrEmpty(Options.windowName.Value))
+            if (!String.IsNullOrEmpty(Options.windowName?.Value))
                 args += " -c \"" + Options.windowName.Value + "\"";
-            if (!String.IsNullOrEmpty(Options.processName.Value))
+            if (!String.IsNullOrEmpty(Options.processName?.Value))
                 args += " -p \"" + Options.processName.Value + "\"";
-            if (!String.IsNullOrEmpty(Options.openProgram.Value))
+            if (!String.IsNullOrEmpty(Options.openProgram?.Value))
                 args += " -o \"" + Options.openProgram.Value + "\"";
-            if (!String.IsNullOrEmpty(Options.openProgramArguments.Value))
+            if (!String.IsNullOrEmpty(Options.openProgramArguments?.Value))
                 args += " -a \"" + Options.openProgramArguments.Value + "\"";
-            args += " -f \"" + Options.framerate.Value.ToString() + "\"";
+            if (Options.framerate != null)
+                args += " -f \"" + Options.framerate.Value.ToString() + "\"";
+            if (Options.altOpenProgram != null && Options.altOpenProgram.Value)
+                args += " --alt";
 
             Plugin.ME.Logger_p.LogInfo("Capture, Arguments: \"" + args + "\"");
 
