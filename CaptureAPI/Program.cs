@@ -15,6 +15,7 @@ namespace CaptureAPI
         public static Process? openedProgram;
         public static bool triedOpeningProgram = false; //tried starting other program
         public static volatile bool closeOperation = false; //close this program if true
+        public static bool altOpenMethod = false; //don't lose focus, but also don't close program afterwards
 
 
         public static void Main(string[] args)
@@ -41,6 +42,10 @@ namespace CaptureAPI
                     case "--arg": case "-a": //example: ./CaptureAPI.exe -a "\"C:\vids folder\pebbsi.mp4\"" --op "C:\Program Files\VideoLAN\VLC\vlc.exe"
                         if (++i < args.Length)
                             openProgramArguments = args[i];
+                        break;
+
+                    case "--alt": //example: ./CaptureAPI.exe --alt -o notepad -p notepad
+                        altOpenMethod = true;
                         break;
 
                     case "--fps": case "-f": //example: ./CaptureAPI.exe --fps 30 -p notepad
@@ -103,8 +108,13 @@ namespace CaptureAPI
 
                 //try again next loop
                 if (windowHandle == WindowFinder.INVALID_HANDLE_VALUE) {
-                    if (!triedOpeningProgram)
-                        windowHandle = (int) StartProgram(openProgram, openProgramArguments);
+                    if (!triedOpeningProgram) {
+                        if (!altOpenMethod) {
+                            windowHandle = (int)StartProgram(openProgram, openProgramArguments);
+                        } else {
+                            StartProgramNoFocus(openProgram, openProgramArguments);
+                        }
+                    }
                     triedOpeningProgram = true;
 
                     notFoundCounter++;
@@ -180,6 +190,18 @@ namespace CaptureAPI
 
             Console.WriteLine("[" + DateTime.Now.TimeOfDay + "] StartProgram, Handle: " + handle + ", title: \"" + openedProgram?.MainWindowTitle + "\"");
             return handle;
+        }
+
+
+        public static void StartProgramNoFocus(string path, string args = "")
+        {
+            if (string.IsNullOrEmpty(path)) {
+                Console.WriteLine("[" + DateTime.Now.TimeOfDay + "] StartProgramNoFocus, No program path parameter provided");
+                return;
+            }
+            string command = "\"" + path + "\" " + args;
+            Console.WriteLine("[" + DateTime.Now.TimeOfDay + "] StartProgramNoFocus, Executing command \"" + command + "\"");
+            StartNoFocus.StartProcessNoActivate(command);
         }
 
 
