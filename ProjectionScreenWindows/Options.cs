@@ -10,11 +10,18 @@ namespace ProjectionScreenWindows
     public class Options : OptionInterface
     {
         public static Configurable<bool> overrideAllGames, ignoreOrigPos, moveRandomly;
-        public static Configurable<string> windowName, processName, openProgram, openProgramArguments;
+        public static Configurable<string> windowName, processName, openProgram, openProgramArguments, positionType;
         public static Configurable<int> framerate, cropLeft, cropBottom, cropRight, cropTop;
         public static OpSimpleButton testButton;
         public static OpImage testFrame;
         public int curTab;
+        public enum PositionTypes
+        {
+            Middle,
+            Puppet,
+            Player,
+            Mouse
+        }
 
 
         public Options()
@@ -27,6 +34,7 @@ namespace ProjectionScreenWindows
             processName = config.Bind("processName", defaultValue: "", new ConfigurableInfo("Program will match a window name with a process name. Leave empty to only search for window name.\nExamples:    notepad    cmd    vlc", null, "", "Process name"));
             openProgram = config.Bind("openProgram", defaultValue: "", new ConfigurableInfo("If no window was found, the program will try to open a program once. It will also be closed afterwards. Leaving this empty will not start or stop any program.\nExamples:    notepad    CMD.exe    C:\\Program Files\\VideoLAN\\VLC\\vlc.exe", null, "", "Open program"));
             openProgramArguments = config.Bind("openProgramArguments", defaultValue: "", new ConfigurableInfo("Arguments to pass when opening a program.\nExamples:    /?    \\\"\\\"C:\\vids folder\\pebbsi.mp4\\\"\\\"", null, "", "Arguments"));
+            positionType = config.Bind("positionType", defaultValue: PositionTypes.Middle.ToString(), new ConfigurableInfo("Target position for the window. Not actual position, because this is influenced by other options.", null, "", "Position type"));
 
             cropLeft = config.Bind("cropLeft", defaultValue: 0, new ConfigurableInfo("Crop left of frames (pixels). No performance loss.\nExamples:    (Notepad) 1    (VLC) 1    (CMD) 1", new ConfigAcceptableRange<int>(0, int.MaxValue), "", "Crop left"));
             cropBottom = config.Bind("cropBottom", defaultValue: 0, new ConfigurableInfo("Crop bottom of frames (pixels). No performance loss.\nExamples:    (Notepad) 1    (VLC) 53    (CMD) 1", new ConfigAcceptableRange<int>(0, int.MaxValue), "", "Crop bottom"));
@@ -39,33 +47,50 @@ namespace ProjectionScreenWindows
         {
             base.Initialize();
 
-            curTab = 0;
             Tabs = new OpTab[]
             {
                 new OpTab(this, "General"),
                 new OpTab(this, "Position"),
                 new OpTab(this, "Test")
             };
-            AddTitle();
             float mid(float size = 0f) { return 300f - (size / 2); } //both X and Y
+            this.OnDeactivate += () => { testActive = false; };
+
+            /**************** General ****************/
             float height = 540f;
+            curTab = 0;
+
+            AddTitle();
             AddCheckbox(overrideAllGames, new Vector2(20f, height -= 40f));
             AddDragger(framerate, new Vector2(20f, height -= 40f));
             AddTextbox(windowName, new Vector2(20f, height -= 40f));
             AddTextbox(processName, new Vector2(20f, height -= 40f));
             AddTextbox(openProgram, new Vector2(20f, height -= 40f), 460f);
             AddTextbox(openProgramArguments, new Vector2(20f, height -= 40f), 460f);
+            /*****************************************/
 
+            /*************** Position ****************/
             height = 540f;
             curTab++;
-            AddCheckbox(ignoreOrigPos, new Vector2(20f, height -= 40f));
-            AddCheckbox(moveRandomly, new Vector2(20f, height -= 40f));
+
+            string[] valsString = new string[sizeof(PositionTypes)];
+            int i = 0;
+            foreach (var val in Enum.GetValues(typeof(PositionTypes)))
+                valsString[i++] = val.ToString();
+
+            AddComboBox(positionType, new Vector2(20f, height -= 40f), valsString);
+            AddCheckbox(ignoreOrigPos, new Vector2(320f, height));
+            AddCheckbox(moveRandomly, new Vector2(320f, height -= 40f));
             AddUpDown(cropTop, new Vector2(mid(60f), height = mid() + 50f));
             AddUpDown(cropLeft, new Vector2(mid(60f) - 140f, height -= 50f));
             AddUpDown(cropRight, new Vector2(mid(60f) + 140f, height));
             AddUpDown(cropBottom, new Vector2(mid(60f), height -= 50f));
+            /*****************************************/
 
+            /***************** Test ******************/
+            height = 540f;
             curTab++;
+
             string str = AssetManager.ResolveFilePath("Illustrations" + Path.DirectorySeparatorChar.ToString() + "pebbles_can_centered_600x600.png");
             Texture2D tex = new Texture2D(1, 1, TextureFormat.ARGB32, false);
             try {
@@ -86,8 +111,7 @@ namespace ProjectionScreenWindows
             testButton.OnClick += TestButtonOnClickHandler;
             testButton.OnReactivate += TestButtonUpdate;
             Tabs[curTab].AddItems(new UIelement[] { backgroundImg, tipsText, testFrame, testButton });
-
-            this.OnDeactivate += () => { testActive = false; };
+            /*****************************************/
         }
 
 
@@ -181,6 +205,26 @@ namespace ProjectionScreenWindows
             Tabs[curTab].AddItems(new UIelement[]
             {
                 updown,
+                label
+            });
+        }
+
+
+        private void AddComboBox(Configurable<string> option, Vector2 pos, string[] array, float width = 80f)
+        {
+            OpComboBox box = new OpComboBox(option, pos, width, array)
+            {
+                description = option.info.description
+            };
+
+            OpLabel label = new OpLabel(pos.x + width + 20f, pos.y + 2f, option.info.Tags[0] as string)
+            {
+                description = option.info.description
+            };
+
+            Tabs[curTab].AddItems(new UIelement[]
+            {
+                box,
                 label
             });
         }

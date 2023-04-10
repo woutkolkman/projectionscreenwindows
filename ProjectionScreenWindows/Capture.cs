@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+using static ProjectionScreenWindows.Options;
 
 namespace ProjectionScreenWindows
 {
@@ -26,6 +27,8 @@ namespace ProjectionScreenWindows
 
         Queue<string> imgUnload = new Queue<string>();
         public const int IMG_UNLOAD_AT_COUNT = 4; //delay atlas unload so game doesn't throw exceptions
+
+        Options.PositionTypes posType = Options.PositionTypes.Middle;
 
 
         //constructor starts background process, every newline received will be handled by DataReceivedEvent()
@@ -65,6 +68,14 @@ namespace ProjectionScreenWindows
             } catch (Exception ex) {
                 Plugin.ME.Logger_p.LogError("Capture, Start exception: " + ex.ToString());
             }
+
+            //check position type
+            if (Options.positionType?.Value == null)
+                return;
+            foreach (Options.PositionTypes val in Enum.GetValues(typeof(PositionTypes)))
+                if (String.Equals(Options.positionType.Value, val.ToString()))
+                    posType = val;
+            Plugin.ME.Logger_p.LogInfo("Capture, posType: " + posType.ToString());
         }
 
 
