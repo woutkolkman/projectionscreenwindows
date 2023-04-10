@@ -29,6 +29,8 @@ namespace ProjectionScreenWindows
         public const int IMG_UNLOAD_AT_COUNT = 4; //delay atlas unload so game doesn't throw exceptions
 
         Options.PositionTypes posType = Options.PositionTypes.Middle;
+        public static Vector2 offsetPos = new Vector2();
+        public Vector2 targetPos, actualPos;
 
 
         //constructor starts background process, every newline received will be handled by DataReceivedEvent()
@@ -47,7 +49,16 @@ namespace ProjectionScreenWindows
 
             Plugin.ME.Logger_p.LogInfo("Capture, Arguments: \"" + args + "\"");
 
-            adjusting.showMediaPos = new Vector2(midX, midY);
+            targetPos = new Vector2(midX, midY); //default target position center of screen
+            adjusting.showMediaPos = targetPos; //start random move position center of screen
+            actualPos = targetPos + offsetPos; //actual pos is final position of image
+
+            //check position type
+            if (Options.positionType?.Value != null)
+                foreach (Options.PositionTypes val in Enum.GetValues(typeof(PositionTypes)))
+                    if (String.Equals(Options.positionType.Value, val.ToString()))
+                        posType = val;
+            Plugin.ME.Logger_p.LogInfo("Capture, posType: " + posType.ToString());
 
             //create OracleProjectionScreen in case of no projectionscreen
             if (self?.oracle != null && self.oracle.myScreen == null)
@@ -68,14 +79,6 @@ namespace ProjectionScreenWindows
             } catch (Exception ex) {
                 Plugin.ME.Logger_p.LogError("Capture, Start exception: " + ex.ToString());
             }
-
-            //check position type
-            if (Options.positionType?.Value == null)
-                return;
-            foreach (Options.PositionTypes val in Enum.GetValues(typeof(PositionTypes)))
-                if (String.Equals(Options.positionType.Value, val.ToString()))
-                    posType = val;
-            Plugin.ME.Logger_p.LogInfo("Capture, posType: " + posType.ToString());
         }
 
 
@@ -164,14 +167,37 @@ namespace ProjectionScreenWindows
             if (self is SLOracleBehavior) {
                 (self as SLOracleBehavior).movementBehavior = SLOracleBehavior.MovementBehavior.KeepDistance;
                 if ((self as SLOracleBehavior).holdingObject is FivePebblesPong.GameController)
-                    self.lookPoint = adjusting.showMediaPos;
+                    self.lookPoint = actualPos;
             }
             if (self is MoreSlugcats.SSOracleRotBehavior && (self as MoreSlugcats.SSOracleRotBehavior).holdingObject is FivePebblesPong.GameController)
-                self.lookPoint = adjusting.showMediaPos;
+                self.lookPoint = actualPos;
 
-            if (Options.moveRandomly.Value || new Vector2(midX, midY) != adjusting.showMediaPos)
-                adjusting.Update(self, new Vector2(midX, midY), !Options.moveRandomly.Value);
+            //get target position for images
+            switch (posType)
+            {
+                case Options.PositionTypes.Player:
+                    targetPos = p?.DangerPos ?? self.player?.DangerPos ?? new Vector2(midX, midY);
+                    break;
 
+                case Options.PositionTypes.Puppet:
+                    targetPos = self.oracle?.bodyChunks[0]?.pos ?? new Vector2(midX, midY);
+                    break;
+
+                case Options.PositionTypes.Mouse:
+                    targetPos = (Vector2) Futile.mousePosition + ((self.oracle?.room?.game?.cameras?.Length > 0) ? self.oracle.room.game.cameras[0].pos : new Vector2());
+                    break;
+
+                case Options.PositionTypes.Middle:
+                default:
+                    targetPos = new Vector2(midX, midY);
+                    break;
+            }
+
+            //get setpoint for adjust image randomly
+            if (Options.moveRandomly.Value || targetPos != adjusting.showMediaPos)
+                adjusting.Update(self, targetPos, !Options.moveRandomly.Value);
+
+            //unload previous frames
             if (imgLoiter.Count >= IMG_LOITER_COUNT) {
                 ProjectedImage img = imgLoiter.Dequeue();
                 self.oracle.room.RemoveObject(img);
@@ -194,9 +220,9 @@ namespace ProjectionScreenWindows
             //load and display new frame
             ProjectedImage temp;
             if ((self is SLOracleBehavior && !ModManager.MSC) || self is MoreSlugcats.SSOracleRotBehavior) {
-                temp = new FivePebblesPong.MoonProjectedImageFromMemory(new List<Texture2D> { newFrame }, new List<string> { imgName }, 0) { pos = adjusting.showMediaPos };
+                temp = new FivePebblesPong.MoonProjectedImageFromMemory(new List<Texture2D> { newFrame }, new List<string> { imgName }, 0) { pos = actualPos };
             } else {
-                temp = new FivePebblesPong.ProjectedImageFromMemory(new List<Texture2D> { newFrame }, new List<string> { imgName }, 0) { pos = adjusting.showMediaPos };
+                temp = new FivePebblesPong.ProjectedImageFromMemory(new List<Texture2D> { newFrame }, new List<string> { imgName }, 0) { pos = actualPos };
             }
             imgLoiter.Enqueue(temp);
             self.oracle.myScreen.room.AddObject(temp);
@@ -252,8 +278,9 @@ namespace ProjectionScreenWindows
         //update all image positions
         public override void Draw(Vector2 offset)
         {
+            actualPos = adjusting.showMediaPos - (Options.ignoreOrigPos.Value ? new Vector2() : offset) + offsetPos;
             foreach (ProjectedImage img in imgLoiter)
-                img.pos = adjusting.showMediaPos - (Options.ignoreOrigPos.Value ? new Vector2() : offset);
+                img.pos = actualPos;
         }
 
 

@@ -15,6 +15,7 @@ namespace ProjectionScreenWindows
         public static OpSimpleButton testButton;
         public static OpImage testFrame;
         public int curTab;
+
         public enum PositionTypes
         {
             Middle,
@@ -27,7 +28,7 @@ namespace ProjectionScreenWindows
         public Options()
         {
             overrideAllGames = config.Bind("overrideAllGames", defaultValue: true, new ConfigurableInfo("When unchecked, RM & SL Pong are accessible and all original games can be played.", null, "", "Replace all games"));
-            ignoreOrigPos = config.Bind("ignoreOrigPos", defaultValue: false, new ConfigurableInfo("When unchecked, RM screen has a glitch animation.", null, "", "Ignore original position"));
+            ignoreOrigPos = config.Bind("ignoreOrigPos", defaultValue: true, new ConfigurableInfo("When unchecked, RM screen has a glitch animation.", null, "", "Ignore original position"));
             moveRandomly = config.Bind("moveRandomly", defaultValue: true, new ConfigurableInfo("When checked, the window position is constantly adjusted.", null, "", "Move randomly"));
             framerate = config.Bind("framerate", defaultValue: 40, new ConfigurableInfo("Setpoint for maximum capture framerate.", new ConfigAcceptableRange<int>(1, 60), "", "Framerate setpoint"));
             windowName = config.Bind("windowName", defaultValue: "", new ConfigurableInfo("Program will match a window name with a process name. Leave empty to only search for process name.\nExamples:    Notepad    Command Prompt    VLC media player", null, "", "Window name"));
@@ -106,7 +107,7 @@ namespace ProjectionScreenWindows
                 "\n- Always enter a window or process name, else any process will match."
             );
 
-            testFrame = new OpImage(new Vector2(mid(1f), mid(1f)), Texture2D.whiteTexture);
+            testFrame = new OpImage(new Vector2(mid(1f), mid(1f)), Texture2D.blackTexture);
             testButton = new OpSimpleButton(new Vector2(mid(60f), 20f), new Vector2(60f, 40f), "Test");
             testButton.OnClick += TestButtonOnClickHandler;
             testButton.OnReactivate += TestButtonUpdate;
