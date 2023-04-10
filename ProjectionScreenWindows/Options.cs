@@ -31,7 +31,7 @@ namespace ProjectionScreenWindows
             overrideAllGames = config.Bind("overrideAllGames", defaultValue: true, new ConfigurableInfo("When unchecked, RM & SL Pong are accessible and all original games can be played.", null, "", "Replace all games"));
             ignoreOrigPos = config.Bind("ignoreOrigPos", defaultValue: true, new ConfigurableInfo("When unchecked, RM screen has a glitch animation.", null, "", "Ignore original position"));
             moveRandomly = config.Bind("moveRandomly", defaultValue: true, new ConfigurableInfo("When checked, the window position is constantly adjusted.", null, "", "Move randomly"));
-            framerate = config.Bind("framerate", defaultValue: 40, new ConfigurableInfo("Setpoint for maximum capture framerate.", new ConfigAcceptableRange<int>(1, 60), "", "Framerate setpoint"));
+            framerate = config.Bind("framerate", defaultValue: 40, new ConfigurableInfo("Setpoint for maximum capture framerate.", new ConfigAcceptableRange<int>(1, 99), "", "Framerate setpoint"));
             windowName = config.Bind("windowName", defaultValue: "", new ConfigurableInfo("Program will match a window name with a process name. Leave empty to only search for process name.\nExamples:    Notepad    Command Prompt    VLC media player", null, "", "Window name"));
             processName = config.Bind("processName", defaultValue: "", new ConfigurableInfo("Program will match a window name with a process name. Leave empty to only search for window name.\nExamples:    notepad    cmd    vlc", null, "", "Process name"));
             openProgram = config.Bind("openProgram", defaultValue: "", new ConfigurableInfo("If no window was found, the program will try to open a program once. It will also be closed afterwards. Leaving this empty will not start or stop any program.\nExamples:    notepad    CMD.exe    C:\\Program Files\\VideoLAN\\VLC\\vlc.exe", null, "", "Open program"));
@@ -112,7 +112,8 @@ namespace ProjectionScreenWindows
                 "Tips:\n- Apply changes before testing.\n- Any issues? " +
                 "Check BepInEx logs located in \"Rain World\\BepInEx\\LogOutput.log\", " +
                 "\nor enable a console window in \"Rain World\\BepInEx\\config\\BepInEx.cfg\"." +
-                "\n- Always enter a window or process name, else any process will match."
+                "\n- Always enter a window or process name, else any process will match." +
+                "\n- Resize windows to be small enough to fit on the screen (and because of performance)."
             );
 
             testFrame = new OpImage(new Vector2(mid(1f), mid(1f)), Texture2D.blackTexture);

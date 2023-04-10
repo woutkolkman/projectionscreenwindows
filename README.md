@@ -13,7 +13,7 @@ Thanks to the [Rain World Modding Wiki](https://rainworldmodding.miraheze.org/),
 
 
 ### Description
-A Rain World mod that can project any program on a in-game ProjectionScreen.
+A Rain World mod that can project any program on a in-game ProjectionScreen. You'll need a second monitor to display the window which will be captured.
 
 Tested on v1.9.07b
 
@@ -28,7 +28,7 @@ Please report any bug, problem or feature request via the [Issues](https://githu
 - This console application would send Base64 PNG strings to the plugin. The plugin then needs to convert this string into a Texture2D. This works fairly well, but it is definitely not the most optimised solution.
 - No in-game sound, this is probably played by the recorded program anyway.
 - Note that with this method, you won't get above 10-15 fps on the projection.
-- To increase performance, the Win32 API is used which would probably be faster at taking screenshots. This is added to a separate plugin, because I don't know if this plugin will be accepted on the Workshop because of security reasons.
+- To increase performance, the Win32 API is used which would probably be faster at taking screenshots. This is added to a separate plugin, because I don't know if this plugin will be accepted on the Workshop because of security reasons. I was able to get max 35 fps capture on my potato PC and a window the size of Pebbles' room before frames are dropped.
 
 
 ### Tips
