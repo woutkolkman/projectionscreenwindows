@@ -71,7 +71,7 @@ namespace ProjectionScreenWindows
                 Texture2D newFrame = testCapture?.GetNewFrame();
                 if (newFrame != null) {
                     Options.testFrame.ChangeImage(newFrame);
-                    Options.testFrame.pos = new Vector2(300f - newFrame.width/2, 300f - newFrame.height/2);
+                    Options.testFrame.pos = new Vector2(300f - newFrame.width/2, 300f - newFrame.height/2) + testCapture.offsetPos;
                 }
 
                 //memory leak "fix" (probably FSprite after ChangeImage call)

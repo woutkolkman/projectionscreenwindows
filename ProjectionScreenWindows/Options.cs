@@ -12,6 +12,7 @@ namespace ProjectionScreenWindows
         public static Configurable<bool> overrideAllGames, ignoreOrigPos, moveRandomly;
         public static Configurable<string> windowName, processName, openProgram, openProgramArguments, positionType;
         public static Configurable<int> framerate, cropLeft, cropBottom, cropRight, cropTop;
+        public static Configurable<float> offsetPosX, offsetPosY;
         public static OpSimpleButton testButton;
         public static OpImage testFrame;
         public int curTab;
@@ -35,7 +36,10 @@ namespace ProjectionScreenWindows
             processName = config.Bind("processName", defaultValue: "", new ConfigurableInfo("Program will match a window name with a process name. Leave empty to only search for window name.\nExamples:    notepad    cmd    vlc", null, "", "Process name"));
             openProgram = config.Bind("openProgram", defaultValue: "", new ConfigurableInfo("If no window was found, the program will try to open a program once. It will also be closed afterwards. Leaving this empty will not start or stop any program.\nExamples:    notepad    CMD.exe    C:\\Program Files\\VideoLAN\\VLC\\vlc.exe", null, "", "Open program"));
             openProgramArguments = config.Bind("openProgramArguments", defaultValue: "", new ConfigurableInfo("Arguments to pass when opening a program.\nExamples:    /?    \\\"\\\"C:\\vids folder\\pebbsi.mp4\\\"\\\"", null, "", "Arguments"));
+
             positionType = config.Bind("positionType", defaultValue: PositionTypes.Middle.ToString(), new ConfigurableInfo("Target position for the window. Not actual position, because this is influenced by other options.", null, "", "Position type"));
+            offsetPosX = config.Bind("offsetPosX", defaultValue: 0f, new ConfigurableInfo("Always offset window position (X) by this ammount. -7.5 makes image align with background. Positive values will move right.", null, "", "Offset position X"));
+            offsetPosY = config.Bind("offsetPosY", defaultValue: 0f, new ConfigurableInfo("Always offset window position (Y) by this ammount. 15.5 makes image align with background. Positive values will move up.", null, "", "Offset position Y"));
 
             cropLeft = config.Bind("cropLeft", defaultValue: 0, new ConfigurableInfo("Crop left of frames (pixels). No performance loss.\nExamples:    (Notepad) 1    (VLC) 1    (CMD) 1", new ConfigAcceptableRange<int>(0, int.MaxValue), "", "Crop left"));
             cropBottom = config.Bind("cropBottom", defaultValue: 0, new ConfigurableInfo("Crop bottom of frames (pixels). No performance loss.\nExamples:    (Notepad) 1    (VLC) 53    (CMD) 1", new ConfigAcceptableRange<int>(0, int.MaxValue), "", "Crop bottom"));
@@ -79,13 +83,15 @@ namespace ProjectionScreenWindows
             foreach (var val in Enum.GetValues(typeof(PositionTypes)))
                 valsString[i++] = val.ToString();
 
-            AddComboBox(positionType, new Vector2(20f, height -= 40f), valsString);
-            AddCheckbox(ignoreOrigPos, new Vector2(320f, height));
-            AddCheckbox(moveRandomly, new Vector2(320f, height -= 40f));
-            AddUpDown(cropTop, new Vector2(mid(60f), height = mid() + 50f));
-            AddUpDown(cropLeft, new Vector2(mid(60f) - 140f, height -= 50f));
-            AddUpDown(cropRight, new Vector2(mid(60f) + 140f, height));
-            AddUpDown(cropBottom, new Vector2(mid(60f), height -= 50f));
+            AddTextboxFloat(offsetPosX, new Vector2(mid() - 180f, height -= 40f), 70);
+            AddCheckbox(ignoreOrigPos, new Vector2(mid() + 30f, height));
+            AddTextboxFloat(offsetPosY, new Vector2(mid() - 180f, height -= 40f), 70);
+            AddCheckbox(moveRandomly, new Vector2(mid() + 30f, height));
+            AddComboBox(positionType, new Vector2(mid() - 180f, height -= 40f), valsString);
+            AddUpDown(cropTop, new Vector2(mid(60f), height = mid() + 35f), alV: OpLabel.LabelVAlignment.Top);
+            AddUpDown(cropLeft, new Vector2(mid(60f) - 50f, height -= 35f), alH: FLabelAlignment.Left);
+            AddUpDown(cropRight, new Vector2(mid(60f) + 50f, height), alH: FLabelAlignment.Right);
+            AddUpDown(cropBottom, new Vector2(mid(60f), height -= 35f), alV: OpLabel.LabelVAlignment.Bottom);
             /*****************************************/
 
             /***************** Test ******************/
@@ -171,6 +177,27 @@ namespace ProjectionScreenWindows
         }
 
 
+        private void AddTextboxFloat(Configurable<float> option, Vector2 pos, float width = 150f)
+        {
+            OpTextBox textbox = new OpTextBox(option, pos, width)
+            {
+                allowSpace = true,
+                description = option.info.description
+            };
+
+            OpLabel label = new OpLabel(pos.x + width + 20f, pos.y + 2f, option.info.Tags[0] as string)
+            {
+                description = option.info.description
+            };
+
+            Tabs[curTab].AddItems(new UIelement[]
+            {
+                textbox,
+                label
+            });
+        }
+
+
         private void AddDragger(Configurable<int> option, Vector2 pos)
         {
             OpDragger dragger = new OpDragger(option, pos)
@@ -191,22 +218,37 @@ namespace ProjectionScreenWindows
         }
 
 
-        private void AddUpDown(Configurable<int> option, Vector2 pos)
+        private void AddUpDown(Configurable<int> option, Vector2 pos, FLabelAlignment alH = FLabelAlignment.Center, OpLabel.LabelVAlignment alV = OpLabel.LabelVAlignment.Center)
         {
             OpUpdown updown = new OpUpdown(option, pos, 60f)
             {
                 description = option.info.description
             };
 
-            OpLabel label = new OpLabel(pos.x + 60f + 20f, pos.y + 6f, option.info.Tags[0] as string)
+            Vector2 offset = new Vector2();
+            if (alV == OpLabel.LabelVAlignment.Top) {
+                offset.y += updown.size.y + 5f;
+            } else if (alV == OpLabel.LabelVAlignment.Bottom) {
+                offset.y += -updown.size.y - 5f;
+            } else if (alH == FLabelAlignment.Right) {
+                offset.x += updown.size.x + 18f;
+                alH = FLabelAlignment.Left;
+            } else if (alH == FLabelAlignment.Left) {
+                offset.x += -updown.size.x - 18f;
+                alH = FLabelAlignment.Right;
+            }
+
+            OpLabel label = new OpLabel(pos + offset, updown.size, option.info.Tags[0] as string)
             {
                 description = option.info.description
             };
+            label.alignment = alH;
+            label.verticalAlignment = OpLabel.LabelVAlignment.Center;
 
             Tabs[curTab].AddItems(new UIelement[]
             {
-                updown,
-                label
+                label,
+                updown
             });
         }
 

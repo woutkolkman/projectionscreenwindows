@@ -29,7 +29,7 @@ namespace ProjectionScreenWindows
         public const int IMG_UNLOAD_AT_COUNT = 4; //delay atlas unload so game doesn't throw exceptions
 
         Options.PositionTypes posType = Options.PositionTypes.Middle;
-        public static Vector2 offsetPos = new Vector2();
+        public Vector2 offsetPos = new Vector2();
         public Vector2 targetPos, actualPos;
 
 
@@ -59,6 +59,10 @@ namespace ProjectionScreenWindows
                     if (String.Equals(Options.positionType.Value, val.ToString()))
                         posType = val;
             Plugin.ME.Logger_p.LogInfo("Capture, posType: " + posType.ToString());
+
+            //set offset position
+            if (Options.offsetPosX?.Value != null && Options.offsetPosY?.Value != null)
+                offsetPos = new Vector2(Options.offsetPosX.Value, Options.offsetPosY.Value);
 
             //create OracleProjectionScreen in case of no projectionscreen
             if (self?.oracle != null && self.oracle.myScreen == null)
