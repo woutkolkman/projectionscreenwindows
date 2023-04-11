@@ -3,7 +3,7 @@
   "name": "ProjectionScreenWindows",
   "version": "0.1.0",
   "authors": "Maxi Mol",
-  "description": "Project any program on a ProjectionScreen.",
+  "description": "Project any program on a in-game ProjectionScreen.",
   "requirements": ["maxi-mol.fivepebblespong"],
   "requirements_names": ["Five Pebbles Pong"],
   "tags": ["Tools"],

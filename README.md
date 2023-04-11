@@ -13,7 +13,7 @@ Thanks to the [Rain World Modding Wiki](https://rainworldmodding.miraheze.org/),
 
 
 ### Description
-A Rain World mod that can project any program on a in-game ProjectionScreen. You'll need a second monitor to display the window which will be captured.
+A Rain World mod that can project any program on a in-game ProjectionScreen. You'll need a second monitor to display the window which will be captured. This plugin starts a background process which is basically Snipping Tool at 30 FPS. Also download Five Pebbles Pong, because this plugin is programmed as an add-on game.
 
 Tested on v1.9.07b
 
