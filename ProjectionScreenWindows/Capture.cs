@@ -179,7 +179,7 @@ namespace ProjectionScreenWindows
             if (self is MoreSlugcats.SSOracleRotBehavior && (self as MoreSlugcats.SSOracleRotBehavior).holdingObject is FivePebblesPong.GameController)
                 self.lookPoint = actualPos;
 
-            //get target position for images
+            //get target position type for images
             switch (posType)
             {
                 case Options.PositionTypes.Player:

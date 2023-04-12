@@ -37,6 +37,26 @@ namespace ProjectionScreenWindows
             //add game to gamelist
             gameNrCapture = FivePebblesPong.Plugin.amountOfGames;
             FivePebblesPong.Plugin.amountOfGames++;
+
+            /********************************* Hooks for all triggers *********************************/
+            //five pebbles constructor
+            On.SSOracleBehavior.ctor += SSOracleBehaviorCtorHook;
+
+            //moon constructor
+            On.SLOracleBehavior.ctor += SLOracleBehaviorCtorHook;
+
+            //five pebbles (rot) constructor
+            On.MoreSlugcats.SSOracleRotBehavior.ctor += MoreSlugcatsSSOracleRotBehaviorCtorHook;
+
+            //five pebbles update function
+            On.SSOracleBehavior.Update += SSOracleBehaviorUpdateHook;
+
+            //moon update function
+            On.SLOracleBehavior.Update += SLOracleBehaviorUpdateHook;
+
+            //five pebbles (rot) update function
+            On.MoreSlugcats.SSOracleRotBehavior.Update += MoreSlugcatsSSOracleRotBehaviorUpdateHook;
+            /******************************************************************************************/
         }
 
 
@@ -117,5 +137,197 @@ namespace ProjectionScreenWindows
                 return new Capture(ob);
             return orig(ob);
         }
+
+
+        /********************************* Hooks for all triggers *********************************/
+        static Options.TriggerTypes startTrigger = Options.TriggerTypes.None;
+        static Options.TriggerTypes stopTrigger = Options.TriggerTypes.None;
+        static Capture trigCapture;
+
+
+        //five pebbles constructor
+        static void SSOracleBehaviorCtorHook(On.SSOracleBehavior.orig_ctor orig, SSOracleBehavior self, Oracle oracle)
+        {
+            Plugin.ME.Logger_p.LogInfo("SSOracleBehaviorCtorHook");
+            orig(self, oracle);
+            CheckCtorTriggers(self, FivePebblesPong.SSGameStarter.starter?.game == null);
+        }
+
+
+        //moon constructor
+        static void SLOracleBehaviorCtorHook(On.SLOracleBehavior.orig_ctor orig, SLOracleBehavior self, Oracle oracle)
+        {
+            Plugin.ME.Logger_p.LogInfo("SLOracleBehaviorCtorHook");
+            orig(self, oracle);
+            CheckCtorTriggers(self, FivePebblesPong.SLGameStarter.starter?.game == null);
+        }
+
+
+        //five pebbles (rot) constructor
+        static void MoreSlugcatsSSOracleRotBehaviorCtorHook(On.MoreSlugcats.SSOracleRotBehavior.orig_ctor orig, MoreSlugcats.SSOracleRotBehavior self, Oracle oracle)
+        {
+            Plugin.ME.Logger_p.LogInfo("MoreSlugcatsSSOracleRotBehaviorCtorHook");
+            orig(self, oracle);
+            CheckCtorTriggers(self, FivePebblesPong.RMGameStarter.starter?.game == null);
+        }
+
+
+        static void CheckCtorTriggers(OracleBehavior self, bool gameIsNull)
+        {
+            Options.TriggerTypes GetTriggerType(Configurable<string> option) {
+                if (option?.Value != null)
+                    foreach (Options.TriggerTypes val in Enum.GetValues(typeof(Options.TriggerTypes)))
+                        if (String.Equals(option.Value, val.ToString()))
+                            return val;
+                return Options.TriggerTypes.None;
+            }
+
+            startTrigger = GetTriggerType(Options.startTrigger);
+            stopTrigger = GetTriggerType(Options.stopTrigger);
+
+            if (stopTrigger != startTrigger && startTrigger == Options.TriggerTypes.OnConstructor && gameIsNull)
+                trigCapture = new Capture(self);
+            if (stopTrigger == Options.TriggerTypes.OnConstructor) {
+                trigCapture?.Destroy();
+                trigCapture = null;
+            }
+        }
+
+
+        //five pebbles update function
+        static void SSOracleBehaviorUpdateHook(On.SSOracleBehavior.orig_Update orig, SSOracleBehavior self, bool eu)
+        {
+            orig(self, eu);
+            CheckUpdateTriggers(self, FivePebblesPong.SSGameStarter.starter?.game == null);
+        }
+
+
+        //moon update function
+        static void SLOracleBehaviorUpdateHook(On.SLOracleBehavior.orig_Update orig, SLOracleBehavior self, bool eu)
+        {
+            orig(self, eu);
+            CheckUpdateTriggers(self, FivePebblesPong.SLGameStarter.starter?.game == null);
+        }
+
+
+        //five pebbles (rot) update function
+        static void MoreSlugcatsSSOracleRotBehaviorUpdateHook(On.MoreSlugcats.SSOracleRotBehavior.orig_Update orig, MoreSlugcats.SSOracleRotBehavior self, bool eu)
+        {
+            orig(self, eu);
+            CheckUpdateTriggers(self, FivePebblesPong.RMGameStarter.starter?.game == null);
+        }
+
+
+        static WeakReference prevRoom = null;
+        static bool prevNoticed = false;
+        static void CheckUpdateTriggers(OracleBehavior self, bool gameIsNull)
+        {
+            //prevent rapid start/stop
+            if (stopTrigger == startTrigger)
+                return;
+
+            //prevent starting two capture instances at once
+            if (!gameIsNull) {
+                trigCapture?.Destroy();
+                trigCapture = null;
+                return;
+            }
+
+            Room curRoom = self?.player?.room;
+
+            //player noticed
+            bool curNoticed = false;
+            if (self is SSOracleBehavior)
+                curNoticed |= (self as SSOracleBehavior).timeSinceSeenPlayer > 0;
+            if (self is SLOracleBehavior)
+                curNoticed |= (self as SLOracleBehavior).hasNoticedPlayer;
+            if (self is MoreSlugcats.SSOracleRotBehavior)
+                curNoticed |= (self as MoreSlugcats.SSOracleRotBehavior).hasNoticedPlayer;
+
+            switch (startTrigger) {
+                //*******************************************
+                case Options.TriggerTypes.OnPlayerEntersRoom:
+                    if (prevRoom?.Target != curRoom && curRoom == self?.oracle?.room && trigCapture == null)
+                        trigCapture = new Capture(self);
+                    break;
+
+                //*******************************************
+                case Options.TriggerTypes.OnPlayerLeavesRoom:
+                    if (prevRoom?.Target != curRoom && curRoom != self?.oracle?.room && trigCapture == null)
+                        trigCapture = new Capture(self);
+                    break;
+
+                //*******************************************
+                case Options.TriggerTypes.OnPlayerNoticed:
+                    if (curNoticed && !prevNoticed && trigCapture == null)
+                        trigCapture = new Capture(self);
+                    break;
+
+                //*******************************************
+                case Options.TriggerTypes.OnConversationStart:
+                    break;
+
+                //*******************************************
+                case Options.TriggerTypes.OnConversationEnd:
+                    break;
+
+                //*******************************************
+                case Options.TriggerTypes.OnPlayerDeath:
+                    break;
+
+                //*******************************************
+                case Options.TriggerTypes.OnThrowOut:
+                    break;
+            }
+
+            switch (stopTrigger) {
+                //*******************************************
+                case Options.TriggerTypes.OnPlayerEntersRoom:
+                    if (prevRoom?.Target != curRoom && curRoom == self?.oracle?.room) {
+                        trigCapture?.Destroy();
+                        trigCapture = null;
+                    }
+                    break;
+
+                //*******************************************
+                case Options.TriggerTypes.OnPlayerLeavesRoom:
+                    if (prevRoom?.Target != curRoom && curRoom != self?.oracle?.room) {
+                        trigCapture?.Destroy();
+                        trigCapture = null;
+                    }
+                    break;
+
+                //*******************************************
+                case Options.TriggerTypes.OnPlayerNoticed:
+                    if (curNoticed && !prevNoticed) {
+                        trigCapture?.Destroy();
+                        trigCapture = null;
+                    }
+                    break;
+
+                //*******************************************
+                case Options.TriggerTypes.OnConversationStart:
+                    break;
+
+                //*******************************************
+                case Options.TriggerTypes.OnConversationEnd:
+                    break;
+
+                //*******************************************
+                case Options.TriggerTypes.OnPlayerDeath:
+                    break;
+
+                //*******************************************
+                case Options.TriggerTypes.OnThrowOut:
+                    break;
+            }
+
+            trigCapture?.Update(self);
+
+            if (self?.player?.room != null)
+                prevRoom = new WeakReference(self.player.room);
+            prevNoticed = curNoticed;
+        }
+        /******************************************************************************************/
     }
 }

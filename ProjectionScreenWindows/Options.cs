@@ -10,7 +10,8 @@ namespace ProjectionScreenWindows
     public class Options : OptionInterface
     {
         public static Configurable<bool> overrideAllGames, ignoreOrigPos, moveRandomly, altOpenProgram;
-        public static Configurable<string> windowName, processName, openProgram, openProgramArguments, positionType;
+        public static Configurable<string> windowName, processName, openProgram, openProgramArguments;
+        public static Configurable<string> positionType, startTrigger, stopTrigger;
         public static Configurable<int> framerate, cropLeft, cropBottom, cropRight, cropTop;
         public static Configurable<float> offsetPosX, offsetPosY;
         public static OpSimpleButton testButton;
@@ -23,6 +24,18 @@ namespace ProjectionScreenWindows
             Puppet,
             Player,
             Mouse
+        }
+        public enum TriggerTypes
+        {
+            None,
+            OnConstructor,
+            OnPlayerEntersRoom,
+            OnPlayerLeavesRoom,
+            OnPlayerNoticed,
+            OnConversationStart,
+            OnConversationEnd,
+            OnPlayerDeath,
+            OnThrowOut
         }
 
 
@@ -46,6 +59,9 @@ namespace ProjectionScreenWindows
             cropBottom = config.Bind("cropBottom", defaultValue: 0, new ConfigurableInfo("Crop bottom of frames (pixels). No performance loss.\nExamples:    (Notepad) 1    (VLC) 53    (CMD) 1", new ConfigAcceptableRange<int>(0, int.MaxValue), "", "Crop bottom"));
             cropRight = config.Bind("cropRight", defaultValue: 0, new ConfigurableInfo("Crop right of frames (pixels). No performance loss.\nExamples:    (Notepad) -17    (VLC) -1    (CMD) -18", new ConfigAcceptableRange<int>(int.MinValue + 1, 0), "", "Crop right"));
             cropTop = config.Bind("cropTop", defaultValue: 0, new ConfigurableInfo("Crop top of frames (pixels). No performance loss.\nExamples:    (Notepad) -51    (VLC) -52    (CMD) -31", new ConfigAcceptableRange<int>(int.MinValue + 1, 0), "", "Crop top"));
+
+            startTrigger = config.Bind("startTrigger", defaultValue: TriggerTypes.None.ToString(), new ConfigurableInfo("When to start the capture program. By default it's only started when holding the controller.", null, "", "Start trigger"));
+            stopTrigger = config.Bind("stopTrigger", defaultValue: TriggerTypes.None.ToString(), new ConfigurableInfo("When to stop the capture program. By default it's only stopped when dropping the controller.", null, "", "Stop trigger"));
         }
 
 
@@ -57,7 +73,8 @@ namespace ProjectionScreenWindows
             {
                 new OpTab(this, "General"),
                 new OpTab(this, "Position"),
-                new OpTab(this, "Test")
+                new OpTab(this, "Test"),
+                new OpTab(this, "Triggers")
             };
             float mid(float size = 0f) { return 300f - (size / 2); } //both X and Y
             this.OnDeactivate += () => { testActive = false; };
@@ -80,16 +97,11 @@ namespace ProjectionScreenWindows
             height = 540f;
             curTab++;
 
-            string[] valsString = new string[sizeof(PositionTypes)];
-            int i = 0;
-            foreach (var val in Enum.GetValues(typeof(PositionTypes)))
-                valsString[i++] = val.ToString();
-
             AddTextboxFloat(offsetPosX, new Vector2(mid() - 180f, height -= 40f), 70);
             AddCheckbox(ignoreOrigPos, new Vector2(mid() + 30f, height));
             AddTextboxFloat(offsetPosY, new Vector2(mid() - 180f, height -= 40f), 70);
             AddCheckbox(moveRandomly, new Vector2(mid() + 30f, height));
-            AddComboBox(positionType, new Vector2(mid() - 180f, height -= 40f), valsString);
+            AddComboBox(positionType, new Vector2(mid() - 180f, height -= 40f), Enum.GetNames(typeof(PositionTypes)));
             AddUpDown(cropTop, new Vector2(mid(60f), height = mid() + 35f), alV: OpLabel.LabelVAlignment.Top);
             AddUpDown(cropLeft, new Vector2(mid(60f) - 50f, height -= 35f), alH: FLabelAlignment.Left);
             AddUpDown(cropRight, new Vector2(mid(60f) + 50f, height), alH: FLabelAlignment.Right);
@@ -117,10 +129,19 @@ namespace ProjectionScreenWindows
             );
 
             testFrame = new OpImage(new Vector2(mid(1f), mid(1f)), Texture2D.blackTexture);
-            testButton = new OpSimpleButton(new Vector2(mid(60f), 20f), new Vector2(60f, 40f), "Test");
+            testButton = new OpSimpleButton(new Vector2(mid(60f), 20f), new Vector2(60f, 40f));
             testButton.OnClick += TestButtonOnClickHandler;
             testButton.OnReactivate += TestButtonUpdate;
+            TestButtonUpdate();
             Tabs[curTab].AddItems(new UIelement[] { backgroundImg, tipsText, testFrame, testButton });
+            /*****************************************/
+
+            /*************** Triggers *****************/
+            height = 540f;
+            curTab++;
+
+            AddComboBox(startTrigger, new Vector2(mid(250f), height -= 40f), Enum.GetNames(typeof(TriggerTypes)), 180f);
+            AddComboBox(stopTrigger, new Vector2(mid(250f), height -= 300f), Enum.GetNames(typeof(TriggerTypes)), 180f);
             /*****************************************/
         }
 
