@@ -15,6 +15,8 @@ namespace ProjectionScreenWindows
         static bool prevConvActive = false;
         static bool prevPlayerAlive = false;
         static SSOracleBehavior.Action prevAction = null;
+        static int startDialogDelay = -1, stopDialogDelay = -1;
+        static bool prevGameNull = true, startDialCountDn = false, stopDialCountDn = false;
 
 
         public static void CheckCtorTriggers(OracleBehavior self, bool gameIsNull)
@@ -36,11 +38,42 @@ namespace ProjectionScreenWindows
                 trigCapture?.Destroy();
                 trigCapture = null;
             }
+
+            //dialog added?
+            if (Options.startDialog?.Value?.Length > 0 && Options.startDialogDelay?.Value != null)
+                startDialogDelay = Options.startDialogDelay.Value;
+            if (Options.stopDialog?.Value?.Length > 0 && Options.stopDialogDelay?.Value != null)
+                stopDialogDelay = Options.stopDialogDelay.Value;
         }
 
 
         public static void CheckUpdateTriggers(OracleBehavior self, bool gameIsNull)
         {
+            //start dialogue
+            bool curGameNull = gameIsNull && trigCapture == null;
+            if (self?.dialogBox != null) {
+                if (!curGameNull && prevGameNull)
+                    startDialCountDn = true;
+                if (startDialCountDn) {
+                    if (startDialogDelay == 0)
+                        self.dialogBox.Interrupt(self.Translate(Options.startDialog.Value), 10);
+                    if (startDialogDelay >= 0)
+                        startDialogDelay--;
+                }
+                if (curGameNull && !prevGameNull)
+                    stopDialCountDn = true;
+                if (stopDialCountDn) {
+                        self.dialogBox.Interrupt(self.Translate(Options.stopDialog.Value), 10);
+                    if (stopDialogDelay >= 0)
+                        stopDialogDelay--;
+                }
+            }
+            if (startDialogDelay < 0)
+                startDialCountDn = false;
+            if (stopDialogDelay < 0)
+                stopDialCountDn = false;
+            prevGameNull = curGameNull;
+
             //prevent rapid start/stop
             if (stopTrigger == startTrigger)
                 return;
