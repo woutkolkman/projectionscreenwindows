@@ -140,17 +140,12 @@ namespace ProjectionScreenWindows
 
 
         /********************************* Hooks for all triggers *********************************/
-        static Options.TriggerTypes startTrigger = Options.TriggerTypes.None;
-        static Options.TriggerTypes stopTrigger = Options.TriggerTypes.None;
-        static Capture trigCapture;
-
-
         //five pebbles constructor
         static void SSOracleBehaviorCtorHook(On.SSOracleBehavior.orig_ctor orig, SSOracleBehavior self, Oracle oracle)
         {
             Plugin.ME.Logger_p.LogInfo("SSOracleBehaviorCtorHook");
             orig(self, oracle);
-            CheckCtorTriggers(self, FivePebblesPong.SSGameStarter.starter?.game == null);
+            Triggers.CheckCtorTriggers(self, FivePebblesPong.SSGameStarter.starter?.game == null);
         }
 
 
@@ -159,7 +154,7 @@ namespace ProjectionScreenWindows
         {
             Plugin.ME.Logger_p.LogInfo("SLOracleBehaviorCtorHook");
             orig(self, oracle);
-            CheckCtorTriggers(self, FivePebblesPong.SLGameStarter.starter?.game == null);
+            Triggers.CheckCtorTriggers(self, FivePebblesPong.SLGameStarter.starter?.game == null);
         }
 
 
@@ -168,29 +163,7 @@ namespace ProjectionScreenWindows
         {
             Plugin.ME.Logger_p.LogInfo("MoreSlugcatsSSOracleRotBehaviorCtorHook");
             orig(self, oracle);
-            CheckCtorTriggers(self, FivePebblesPong.RMGameStarter.starter?.game == null);
-        }
-
-
-        static void CheckCtorTriggers(OracleBehavior self, bool gameIsNull)
-        {
-            Options.TriggerTypes GetTriggerType(Configurable<string> option) {
-                if (option?.Value != null)
-                    foreach (Options.TriggerTypes val in Enum.GetValues(typeof(Options.TriggerTypes)))
-                        if (String.Equals(option.Value, val.ToString()))
-                            return val;
-                return Options.TriggerTypes.None;
-            }
-
-            startTrigger = GetTriggerType(Options.startTrigger);
-            stopTrigger = GetTriggerType(Options.stopTrigger);
-
-            if (stopTrigger != startTrigger && startTrigger == Options.TriggerTypes.OnConstructor && gameIsNull)
-                trigCapture = new Capture(self);
-            if (stopTrigger == Options.TriggerTypes.OnConstructor) {
-                trigCapture?.Destroy();
-                trigCapture = null;
-            }
+            Triggers.CheckCtorTriggers(self, FivePebblesPong.RMGameStarter.starter?.game == null);
         }
 
 
@@ -198,7 +171,7 @@ namespace ProjectionScreenWindows
         static void SSOracleBehaviorUpdateHook(On.SSOracleBehavior.orig_Update orig, SSOracleBehavior self, bool eu)
         {
             orig(self, eu);
-            CheckUpdateTriggers(self, FivePebblesPong.SSGameStarter.starter?.game == null);
+            Triggers.CheckUpdateTriggers(self, FivePebblesPong.SSGameStarter.starter?.game == null);
         }
 
 
@@ -206,7 +179,7 @@ namespace ProjectionScreenWindows
         static void SLOracleBehaviorUpdateHook(On.SLOracleBehavior.orig_Update orig, SLOracleBehavior self, bool eu)
         {
             orig(self, eu);
-            CheckUpdateTriggers(self, FivePebblesPong.SLGameStarter.starter?.game == null);
+            Triggers.CheckUpdateTriggers(self, FivePebblesPong.SLGameStarter.starter?.game == null);
         }
 
 
@@ -214,119 +187,7 @@ namespace ProjectionScreenWindows
         static void MoreSlugcatsSSOracleRotBehaviorUpdateHook(On.MoreSlugcats.SSOracleRotBehavior.orig_Update orig, MoreSlugcats.SSOracleRotBehavior self, bool eu)
         {
             orig(self, eu);
-            CheckUpdateTriggers(self, FivePebblesPong.RMGameStarter.starter?.game == null);
-        }
-
-
-        static WeakReference prevRoom = null;
-        static bool prevNoticed = false;
-        static void CheckUpdateTriggers(OracleBehavior self, bool gameIsNull)
-        {
-            //prevent rapid start/stop
-            if (stopTrigger == startTrigger)
-                return;
-
-            //prevent starting two capture instances at once
-            if (!gameIsNull) {
-                trigCapture?.Destroy();
-                trigCapture = null;
-                return;
-            }
-
-            Room curRoom = self?.player?.room;
-
-            //player noticed
-            bool curNoticed = false;
-            if (self is SSOracleBehavior)
-                curNoticed |= (self as SSOracleBehavior).timeSinceSeenPlayer > 0;
-            if (self is SLOracleBehavior)
-                curNoticed |= (self as SLOracleBehavior).hasNoticedPlayer;
-            if (self is MoreSlugcats.SSOracleRotBehavior)
-                curNoticed |= (self as MoreSlugcats.SSOracleRotBehavior).hasNoticedPlayer;
-
-            switch (startTrigger) {
-                //*******************************************
-                case Options.TriggerTypes.OnPlayerEntersRoom:
-                    if (prevRoom?.Target != curRoom && curRoom == self?.oracle?.room && trigCapture == null)
-                        trigCapture = new Capture(self);
-                    break;
-
-                //*******************************************
-                case Options.TriggerTypes.OnPlayerLeavesRoom:
-                    if (prevRoom?.Target != curRoom && curRoom != self?.oracle?.room && trigCapture == null)
-                        trigCapture = new Capture(self);
-                    break;
-
-                //*******************************************
-                case Options.TriggerTypes.OnPlayerNoticed:
-                    if (curNoticed && !prevNoticed && trigCapture == null)
-                        trigCapture = new Capture(self);
-                    break;
-
-                //*******************************************
-                case Options.TriggerTypes.OnConversationStart:
-                    break;
-
-                //*******************************************
-                case Options.TriggerTypes.OnConversationEnd:
-                    break;
-
-                //*******************************************
-                case Options.TriggerTypes.OnPlayerDeath:
-                    break;
-
-                //*******************************************
-                case Options.TriggerTypes.OnThrowOut:
-                    break;
-            }
-
-            switch (stopTrigger) {
-                //*******************************************
-                case Options.TriggerTypes.OnPlayerEntersRoom:
-                    if (prevRoom?.Target != curRoom && curRoom == self?.oracle?.room) {
-                        trigCapture?.Destroy();
-                        trigCapture = null;
-                    }
-                    break;
-
-                //*******************************************
-                case Options.TriggerTypes.OnPlayerLeavesRoom:
-                    if (prevRoom?.Target != curRoom && curRoom != self?.oracle?.room) {
-                        trigCapture?.Destroy();
-                        trigCapture = null;
-                    }
-                    break;
-
-                //*******************************************
-                case Options.TriggerTypes.OnPlayerNoticed:
-                    if (curNoticed && !prevNoticed) {
-                        trigCapture?.Destroy();
-                        trigCapture = null;
-                    }
-                    break;
-
-                //*******************************************
-                case Options.TriggerTypes.OnConversationStart:
-                    break;
-
-                //*******************************************
-                case Options.TriggerTypes.OnConversationEnd:
-                    break;
-
-                //*******************************************
-                case Options.TriggerTypes.OnPlayerDeath:
-                    break;
-
-                //*******************************************
-                case Options.TriggerTypes.OnThrowOut:
-                    break;
-            }
-
-            trigCapture?.Update(self);
-
-            if (self?.player?.room != null)
-                prevRoom = new WeakReference(self.player.room);
-            prevNoticed = curNoticed;
+            Triggers.CheckUpdateTriggers(self, FivePebblesPong.RMGameStarter.starter?.game == null);
         }
         /******************************************************************************************/
     }

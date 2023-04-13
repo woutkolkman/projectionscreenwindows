@@ -42,6 +42,7 @@
     <Compile Include="Hooks.cs" />
     <Compile Include="Capture.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Triggers.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

@@ -1,8 +1,4 @@
-﻿using System.Collections.Generic;
-using RWCustom;
-using UnityEngine;
-using System.IO;
-using System;
+﻿using UnityEngine;
 
 namespace ProjectionScreenWindows
 {
