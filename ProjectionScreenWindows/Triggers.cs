@@ -12,6 +12,9 @@ namespace ProjectionScreenWindows
         static Capture trigCapture;
         static WeakReference prevRoom = null;
         static bool prevNoticed = false;
+        static bool prevConvActive = false;
+        static bool prevPlayerAlive = false;
+        static SSOracleBehavior.Action prevAction = null;
 
 
         public static void CheckCtorTriggers(OracleBehavior self, bool gameIsNull)
@@ -60,93 +63,87 @@ namespace ProjectionScreenWindows
             if (self is MoreSlugcats.SSOracleRotBehavior)
                 curNoticed |= (self as MoreSlugcats.SSOracleRotBehavior).hasNoticedPlayer;
 
-            switch (startTrigger) {
-                //*******************************************
-                case Options.TriggerTypes.OnPlayerEntersRoom:
-                    if (prevRoom?.Target != curRoom && curRoom == self?.oracle?.room && trigCapture == null)
-                        trigCapture = new Capture(self);
-                    break;
+            //conversation active
+            bool curConvActive = false;
+            if (self is SSOracleBehavior)
+                curConvActive |= (self as SSOracleBehavior).conversation != null;
+            if (self is SLOracleBehavior)
+                curConvActive |= (self as SLOracleBehavior).conversationAdded;
+            if (self is MoreSlugcats.SSOracleRotBehavior)
+                curConvActive |= (self as MoreSlugcats.SSOracleRotBehavior).conversation != null;
 
-                //*******************************************
-                case Options.TriggerTypes.OnPlayerLeavesRoom:
-                    if (prevRoom?.Target != curRoom && curRoom != self?.oracle?.room && trigCapture == null)
-                        trigCapture = new Capture(self);
-                    break;
+            bool curPlayerAlive = (self?.player?.abstractCreature?.state != null && self.player.abstractCreature.state.alive);
 
-                //*******************************************
-                case Options.TriggerTypes.OnPlayerNoticed:
-                    if (curNoticed && !prevNoticed && trigCapture == null)
-                        trigCapture = new Capture(self);
-                    break;
+            //current action
+            SSOracleBehavior.Action curAction = null;
+            if (self is SSOracleBehavior)
+                curAction = (self as SSOracleBehavior).action;
 
-                //*******************************************
-                case Options.TriggerTypes.OnConversationStart:
-                    //TODO
-                    break;
+            bool TriggerActive(Options.TriggerTypes trig)
+            {
+                bool triggered = false;
+                switch (trig) {
+                    //*******************************************
+                    case Options.TriggerTypes.OnPlayerEntersRoom:
+                        if (prevRoom?.Target != curRoom && curRoom == self?.oracle?.room)
+                            triggered = true;
+                        break;
 
-                //*******************************************
-                case Options.TriggerTypes.OnConversationEnd:
-                    //TODO
-                    break;
+                    //*******************************************
+                    case Options.TriggerTypes.OnPlayerLeavesRoom:
+                        if (prevRoom?.Target != curRoom && curRoom != self?.oracle?.room)
+                            triggered = true;
+                        break;
 
-                //*******************************************
-                case Options.TriggerTypes.OnPlayerDeath:
-                    //TODO
-                    break;
+                    //*******************************************
+                    case Options.TriggerTypes.OnPlayerNoticed:
+                        if (curNoticed && !prevNoticed)
+                            triggered = true;
+                        break;
 
-                //*******************************************
-                case Options.TriggerTypes.OnThrowOut:
-                    //TODO
-                    break;
+                    //*******************************************
+                    case Options.TriggerTypes.OnConversationStart:
+                        if (curConvActive && !prevConvActive)
+                            triggered = true;
+                        break;
+
+                    //*******************************************
+                    case Options.TriggerTypes.OnConversationEnd:
+                        if (!curConvActive && prevConvActive)
+                            triggered = true;
+                        break;
+
+                    //*******************************************
+                    case Options.TriggerTypes.OnPlayerDeath:
+                        if (!curPlayerAlive && prevPlayerAlive)
+                            triggered = true;
+                        break;
+
+                    //*******************************************
+                    case Options.TriggerTypes.OnThrowOut:
+                        if (curAction != null && prevAction != null && curAction != prevAction)
+                            if (curAction == SSOracleBehavior.Action.ThrowOut_ThrowOut ||
+                                curAction == SSOracleBehavior.Action.ThrowOut_Polite_ThrowOut ||
+                                curAction == SSOracleBehavior.Action.ThrowOut_SecondThrowOut)
+                                triggered = true;
+                        break;
+
+                    //*******************************************
+                    case Options.TriggerTypes.OnKillOnSight:
+                        if (curAction != null && prevAction != null && curAction != prevAction)
+                            if (curAction == SSOracleBehavior.Action.ThrowOut_KillOnSight)
+                                triggered = true;
+                        break;
+                }
+                return triggered;
             }
 
-            switch (stopTrigger) {
-                //*******************************************
-                case Options.TriggerTypes.OnPlayerEntersRoom:
-                    if (prevRoom?.Target != curRoom && curRoom == self?.oracle?.room)
-                    {
-                        trigCapture?.Destroy();
-                        trigCapture = null;
-                    }
-                    break;
+            if (TriggerActive(startTrigger) && trigCapture == null)
+                trigCapture = new Capture(self);
 
-                //*******************************************
-                case Options.TriggerTypes.OnPlayerLeavesRoom:
-                    if (prevRoom?.Target != curRoom && curRoom != self?.oracle?.room)
-                    {
-                        trigCapture?.Destroy();
-                        trigCapture = null;
-                    }
-                    break;
-
-                //*******************************************
-                case Options.TriggerTypes.OnPlayerNoticed:
-                    if (curNoticed && !prevNoticed)
-                    {
-                        trigCapture?.Destroy();
-                        trigCapture = null;
-                    }
-                    break;
-
-                //*******************************************
-                case Options.TriggerTypes.OnConversationStart:
-                    //TODO
-                    break;
-
-                //*******************************************
-                case Options.TriggerTypes.OnConversationEnd:
-                    //TODO
-                    break;
-
-                //*******************************************
-                case Options.TriggerTypes.OnPlayerDeath:
-                    //TODO
-                    break;
-
-                //*******************************************
-                case Options.TriggerTypes.OnThrowOut:
-                    //TODO
-                    break;
+            if (TriggerActive(stopTrigger)) {
+                trigCapture?.Destroy();
+                trigCapture = null;
             }
 
             trigCapture?.Update(self);
@@ -154,6 +151,9 @@ namespace ProjectionScreenWindows
             if (self?.player?.room != null)
                 prevRoom = new WeakReference(self.player.room);
             prevNoticed = curNoticed;
+            prevConvActive = curConvActive;
+            prevPlayerAlive = curPlayerAlive;
+            prevAction = curAction;
         }
     }
 }

@@ -35,7 +35,8 @@ namespace ProjectionScreenWindows
             OnConversationStart,
             OnConversationEnd,
             OnPlayerDeath,
-            OnThrowOut
+            OnThrowOut,
+            OnKillOnSight
         }
 
 
