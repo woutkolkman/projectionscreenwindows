@@ -15,7 +15,7 @@ namespace ProjectionScreenWindows
         public static Configurable<int> framerate, cropLeft, cropBottom, cropRight, cropTop;
         public static Configurable<int> startDialogDelay, stopDialogDelay, startDelay, stopDelay;
         public static Configurable<float> offsetPosX, offsetPosY;
-        public static Configurable<bool> puppetLooksAtWindow;
+        public static Configurable<bool> puppetLooksAtWindow, pauseConversation;
         public static OpSimpleButton testButton;
         public static OpImage testFrame;
         public int curTab;
@@ -47,6 +47,7 @@ namespace ProjectionScreenWindows
             /**************** General ****************/
             overrideAllGames = config.Bind("overrideAllGames", defaultValue: true, new ConfigurableInfo("When unchecked, RM & SL Pong are accessible and all original games can be played.", null, "", "Replace all games"));
             puppetLooksAtWindow = config.Bind("puppetLooksAtWindow", defaultValue: true, new ConfigurableInfo("If there is a window, puppet looks at it.", null, "", "Look at window"));
+            pauseConversation = config.Bind("pauseConversation", defaultValue: false, new ConfigurableInfo("Softlock warning! If there is a window, conversation is paused.", null, "", "Pause conversation"));
             framerate = config.Bind("framerate", defaultValue: 40, new ConfigurableInfo("Setpoint for maximum capture framerate.", new ConfigAcceptableRange<int>(1, 99), "", "Framerate setpoint"));
             windowName = config.Bind("windowName", defaultValue: "", new ConfigurableInfo("Program will match a window name with a process name. Leave empty to only search for process name.\nExamples:    Notepad    Command Prompt    VLC media player", null, "", "Window name"));
             processName = config.Bind("processName", defaultValue: "", new ConfigurableInfo("Program will match a window name with a process name. Leave empty to only search for window name.\nExamples:    notepad    cmd    vlc", null, "", "Process name"));
@@ -101,6 +102,7 @@ namespace ProjectionScreenWindows
             AddTitle();
             AddCheckbox(overrideAllGames, new Vector2(20f, height -= 40f));
             AddCheckbox(puppetLooksAtWindow, new Vector2(220f, height));
+            AddCheckbox(pauseConversation, new Vector2(420f, height));
             AddDragger(framerate, new Vector2(20f, height -= 40f));
             AddTextbox(windowName, new Vector2(20f, height -= 40f), alH: FLabelAlignment.Right);
             AddTextbox(processName, new Vector2(20f, height -= 40f), alH: FLabelAlignment.Right);

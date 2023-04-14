@@ -55,13 +55,16 @@ namespace ProjectionScreenWindows
             }
 
             //start/stop capture
-            if (startDelay == 0 && gameIsNull && trigCapture == null)
+            if (startDelay == 0 && gameIsNull && trigCapture == null) {
                 trigCapture = new Capture(self);
+                PauseConversation(self, pause: true);
+            }
             if (startDelay >= 0)
                 startDelay--;
             if (stopDelay == 0) {
                 trigCapture?.Destroy();
                 trigCapture = null;
+                PauseConversation(self, pause: false);
             }
             if (stopDelay >= 0)
                 stopDelay--;
@@ -162,7 +165,7 @@ namespace ProjectionScreenWindows
                 return triggered;
             }
 
-            if (TriggerActive(startTrigger) && trigCapture == null) {
+            if (TriggerActive(startTrigger)) {
                 Plugin.ME.Logger_p.LogInfo("CheckUpdateTriggers, Triggered start");
 
                 //dialog
@@ -174,7 +177,7 @@ namespace ProjectionScreenWindows
                     startDelay = Options.startDelay.Value;
             }
 
-            if (TriggerActive(stopTrigger) && trigCapture != null) {
+            if (TriggerActive(stopTrigger)) {
                 Plugin.ME.Logger_p.LogInfo("CheckUpdateTriggers, Triggered stop");
 
                 //dialog
@@ -208,6 +211,26 @@ namespace ProjectionScreenWindows
             prevPlayerAlive = curPlayerAlive;
             prevAction = curAction;
             prevGameIsNull = gameIsNull;
+        }
+
+
+        public static void PauseConversation(OracleBehavior self, bool pause)
+        {
+            if (Options.pauseConversation?.Value == null || !Options.pauseConversation.Value)
+                return;
+
+            if (self is SSOracleBehavior && (self as SSOracleBehavior).conversation != null) {
+                (self as SSOracleBehavior).conversation.paused = pause;
+                (self as SSOracleBehavior).restartConversationAfterCurrentDialoge = !pause;
+            }
+            if (self is SLOracleBehaviorHasMark && (self as SLOracleBehaviorHasMark).currentConversation != null) {
+                (self as SLOracleBehaviorHasMark).currentConversation.paused = pause;
+                (self as SLOracleBehaviorHasMark).resumeConversationAfterCurrentDialoge = !pause;
+            }
+            if (self is MoreSlugcats.SSOracleRotBehavior && (self as MoreSlugcats.SSOracleRotBehavior).conversation != null) {
+                (self as MoreSlugcats.SSOracleRotBehavior).conversation.paused = pause;
+                (self as MoreSlugcats.SSOracleRotBehavior).restartConversationAfterCurrentDialoge = !pause;
+            }
         }
     }
 }

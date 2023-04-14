@@ -177,7 +177,8 @@ namespace ProjectionScreenWindows
             }
             if (self is SLOracleBehavior) {
                 (self as SLOracleBehavior).movementBehavior = SLOracleBehavior.MovementBehavior.KeepDistance;
-                if (Options.puppetLooksAtWindow?.Value == null || Options.puppetLooksAtWindow.Value)
+                if (Options.puppetLooksAtWindow?.Value == null || Options.puppetLooksAtWindow.Value || 
+                    (self as SLOracleBehavior).holdingObject is FivePebblesPong.GameController)
                     if (((self is SLOracleBehaviorNoMark) && !tooClose) ||
                         ((self is SLOracleBehaviorHasMark) &&
                         !(self as SLOracleBehaviorHasMark).playerIsAnnoyingWhenNoConversation &&
@@ -185,8 +186,9 @@ namespace ProjectionScreenWindows
                         (self as SLOracleBehaviorHasMark).playerAnnoyingCounter < 20))
                         FivePebblesPong.SLGameStarter.moonLookPoint = actualPos;
             }
-            if (self is MoreSlugcats.SSOracleRotBehavior && (self as MoreSlugcats.SSOracleRotBehavior).holdingObject is FivePebblesPong.GameController)
-                if (!tooClose && (Options.puppetLooksAtWindow?.Value == null || Options.puppetLooksAtWindow.Value))
+            if (self is MoreSlugcats.SSOracleRotBehavior)
+                if (!tooClose && (Options.puppetLooksAtWindow?.Value == null || Options.puppetLooksAtWindow.Value || 
+                    (self as MoreSlugcats.SSOracleRotBehavior).holdingObject is FivePebblesPong.GameController))
                     self.lookPoint = actualPos;
 
             //get target position type for images
