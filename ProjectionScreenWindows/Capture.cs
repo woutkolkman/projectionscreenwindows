@@ -135,7 +135,7 @@ namespace ProjectionScreenWindows
                 ProjectedImage img = imgLoiter.Dequeue();
                 img.RemoveFromRoom();
                 foreach (string name in img.imageNames) {
-                    Plugin.ME.Logger_p.LogInfo("Capture.Destroy, RemoveFromRoom: \"" + name + "\"");
+//                    Plugin.ME.Logger_p.LogInfo("Capture.Destroy, RemoveFromRoom: \"" + name + "\"");
                     imgUnload.Enqueue(name);
                 }
                 img.Destroy();
@@ -156,7 +156,7 @@ namespace ProjectionScreenWindows
                 }
                 while (imgUnload.Count > 0) {
                     string name = imgUnload.Dequeue();
-                    Plugin.ME.Logger_p.LogInfo("Capture.Destroy task, Unload: \"" + name + "\"");
+//                    Plugin.ME.Logger_p.LogInfo("Capture.Destroy task, Unload: \"" + name + "\"");
                     Futile.atlasManager.ActuallyUnloadAtlasOrImage(name);
                 }
             });
@@ -222,7 +222,7 @@ namespace ProjectionScreenWindows
                 return;
 
             string imgName = "FPP_Window_" + frame;
-            //Plugin.ME.Logger_p.LogInfo("Capture.Update, Creating: \"" + imgName + "\"");
+//            Plugin.ME.Logger_p.LogInfo("Capture.Update, Creating: \"" + imgName + "\"");
 
             //load and display new frame
             ProjectedImage temp;
@@ -310,7 +310,7 @@ namespace ProjectionScreenWindows
             byte[] imageBase64 = new byte[0];
             try {
                 imageBase64 = Convert.FromBase64String(e.Data);
-                //File.WriteAllBytes("C:\\test\\test.png", bytes);
+//                File.WriteAllBytes("C:\\test\\test.png", bytes);
             } catch (FormatException) {
                 Plugin.ME.Logger_p.LogInfo("Capture.DataReceivedEvent, \"" + e.Data + "\"");
                 return;

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace ProjectionScreenWindows
@@ -16,7 +14,8 @@ namespace ProjectionScreenWindows
         static bool prevPlayerAlive = false;
         static SSOracleBehavior.Action prevAction = null;
         static int startDialogDelay = -1, stopDialogDelay = -1;
-        static bool prevGameNull = true, startDialCountDn = false, stopDialCountDn = false;
+        static int startDelay = -1, stopDelay = -1;
+        static bool prevGameIsNull = true;
 
 
         public static void CheckCtorTriggers(OracleBehavior self, bool gameIsNull)
@@ -38,53 +37,42 @@ namespace ProjectionScreenWindows
                 trigCapture?.Destroy();
                 trigCapture = null;
             }
-
-            //dialog added?
-            if (Options.startDialog?.Value?.Length > 0 && Options.startDialogDelay?.Value != null)
-                startDialogDelay = Options.startDialogDelay.Value;
-            if (Options.stopDialog?.Value?.Length > 0 && Options.stopDialogDelay?.Value != null)
-                stopDialogDelay = Options.stopDialogDelay.Value;
         }
 
 
         public static void CheckUpdateTriggers(OracleBehavior self, bool gameIsNull)
         {
-            //start dialogue
-            bool curGameNull = gameIsNull && trigCapture == null;
+            //start dialog
             if (self?.dialogBox != null) {
-                if (!curGameNull && prevGameNull)
-                    startDialCountDn = true;
-                if (startDialCountDn) {
-                    if (startDialogDelay == 0)
-                        self.dialogBox.Interrupt(self.Translate(Options.startDialog.Value), 10);
-                    if (startDialogDelay >= 0)
-                        startDialogDelay--;
-                }
-                if (curGameNull && !prevGameNull)
-                    stopDialCountDn = true;
-                if (stopDialCountDn) {
-                        self.dialogBox.Interrupt(self.Translate(Options.stopDialog.Value), 10);
-                    if (stopDialogDelay >= 0)
-                        stopDialogDelay--;
-                }
+                if (startDialogDelay == 0)
+                    self.dialogBox.Interrupt(self.Translate(Options.startDialog.Value), 10);
+                if (startDialogDelay >= 0)
+                    startDialogDelay--;
+                if (stopDialogDelay == 0)
+                    self.dialogBox.Interrupt(self.Translate(Options.stopDialog.Value), 10);
+                if (stopDialogDelay >= 0)
+                    stopDialogDelay--;
             }
-            if (startDialogDelay < 0)
-                startDialCountDn = false;
-            if (stopDialogDelay < 0)
-                stopDialCountDn = false;
-            prevGameNull = curGameNull;
 
-            //prevent rapid start/stop
-            if (stopTrigger == startTrigger)
-                return;
+            //start/stop capture
+            if (startDelay == 0 && gameIsNull && trigCapture == null)
+                trigCapture = new Capture(self);
+            if (startDelay >= 0)
+                startDelay--;
+            if (stopDelay == 0) {
+                trigCapture?.Destroy();
+                trigCapture = null;
+            }
+            if (stopDelay >= 0)
+                stopDelay--;
 
             //prevent starting two capture instances at once
             if (!gameIsNull) {
                 trigCapture?.Destroy();
                 trigCapture = null;
-                return;
             }
 
+            //current room
             Room curRoom = self?.player?.room;
 
             //player noticed
@@ -105,6 +93,7 @@ namespace ProjectionScreenWindows
             if (self is MoreSlugcats.SSOracleRotBehavior)
                 curConvActive |= (self as MoreSlugcats.SSOracleRotBehavior).conversation != null;
 
+            //player alive
             bool curPlayerAlive = (self?.player?.abstractCreature?.state != null && self.player.abstractCreature.state.alive);
 
             //current action
@@ -124,7 +113,9 @@ namespace ProjectionScreenWindows
 
                     //*******************************************
                     case Options.TriggerTypes.OnPlayerLeavesRoom:
-                        if (prevRoom?.Target != curRoom && curRoom != self?.oracle?.room)
+                        if (self?.oracle?.room != null &&               //oracle room is not unloaded
+                            prevRoom?.Target == self?.oracle?.room &&   //previous room was oracle room
+                            curRoom != self?.oracle?.room)              //current room is null or not oracle room
                             triggered = true;
                         break;
 
@@ -171,22 +162,52 @@ namespace ProjectionScreenWindows
                 return triggered;
             }
 
-            if (TriggerActive(startTrigger) && trigCapture == null)
-                trigCapture = new Capture(self);
+            if (TriggerActive(startTrigger) && trigCapture == null) {
+                Plugin.ME.Logger_p.LogInfo("CheckUpdateTriggers, Triggered start");
 
-            if (TriggerActive(stopTrigger)) {
-                trigCapture?.Destroy();
-                trigCapture = null;
+                //dialog
+                if (Options.startDialog?.Value?.Length > 0 && Options.startDialogDelay?.Value != null)
+                    startDialogDelay = Options.startDialogDelay.Value;
+
+                //capture
+                if (Options.startDelay?.Value != null)
+                    startDelay = Options.startDelay.Value;
             }
 
-            trigCapture?.Update(self);
+            if (TriggerActive(stopTrigger) && trigCapture != null) {
+                Plugin.ME.Logger_p.LogInfo("CheckUpdateTriggers, Triggered stop");
 
-            if (self?.player?.room != null)
-                prevRoom = new WeakReference(self.player.room);
+                //dialog
+                if (Options.stopDialog?.Value?.Length > 0 && Options.stopDialogDelay?.Value != null)
+                    stopDialogDelay = Options.stopDialogDelay.Value;
+
+                //capture
+                if (Options.stopDelay?.Value != null)
+                    stopDelay = Options.stopDelay.Value;
+            }
+
+            //also trigger dialog when FPGame from Five Pebbles Pong changes
+            if (!gameIsNull && prevGameIsNull)
+                if (Options.startDialog?.Value?.Length > 0 && Options.startDialogDelay?.Value != null)
+                    startDialogDelay = Options.startDialogDelay.Value;
+            if (gameIsNull && !prevGameIsNull)
+                if (Options.stopDialog?.Value?.Length > 0 && Options.stopDialogDelay?.Value != null)
+                    stopDialogDelay = Options.stopDialogDelay.Value;
+
+            trigCapture?.Update(self);
+            trigCapture?.Draw(new Vector2());
+
+            //update previous values
+            if (curRoom != null) {
+                prevRoom = new WeakReference(curRoom);
+            } else {
+                prevRoom = null; //player entered pipe
+            }
             prevNoticed = curNoticed;
             prevConvActive = curConvActive;
             prevPlayerAlive = curPlayerAlive;
             prevAction = curAction;
+            prevGameIsNull = gameIsNull;
         }
     }
 }

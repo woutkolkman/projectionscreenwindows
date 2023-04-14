@@ -13,7 +13,7 @@ namespace ProjectionScreenWindows
         public static Configurable<string> windowName, processName, openProgram, openProgramArguments;
         public static Configurable<string> positionType, startTrigger, stopTrigger, startDialog, stopDialog;
         public static Configurable<int> framerate, cropLeft, cropBottom, cropRight, cropTop;
-        public static Configurable<int> startDialogDelay, stopDialogDelay;
+        public static Configurable<int> startDialogDelay, stopDialogDelay, startDelay, stopDelay;
         public static Configurable<float> offsetPosX, offsetPosY;
         public static OpSimpleButton testButton;
         public static OpImage testFrame;
@@ -68,10 +68,12 @@ namespace ProjectionScreenWindows
             /*************** Triggers ****************/
             startTrigger = config.Bind("startTrigger", defaultValue: TriggerTypes.None.ToString(), new ConfigurableInfo("When to start the capture program. By default it's only started when holding the controller.", null, "", "Start trigger"));
             stopTrigger = config.Bind("stopTrigger", defaultValue: TriggerTypes.None.ToString(), new ConfigurableInfo("When to stop the capture program. By default it's only stopped when dropping the controller.", null, "", "Stop trigger"));
-            startDialog = config.Bind("startDialog", defaultValue: "", new ConfigurableInfo("Dialog when capture starts. When empty, no custom dialog starts.", null, "", "Start dialog"));
-            stopDialog = config.Bind("stopDialog", defaultValue: "", new ConfigurableInfo("Dialog when capture stops. When empty, no custom dialog starts.", null, "", "Stop dialog"));
-            startDialogDelay = config.Bind("startDialogDelay", defaultValue: 0, new ConfigurableInfo("Delay before dialog starts. Bound to tickrate, 40 t/s.", new ConfigAcceptableRange<int>(0, 99999), "", "Start dialog delay"));
-            stopDialogDelay = config.Bind("stopDialogDelay", defaultValue: 0, new ConfigurableInfo("Delay before dialog starts. Bound to tickrate, 40 t/s.", new ConfigAcceptableRange<int>(0, 99999), "", "Stop dialog delay"));
+            startDialog = config.Bind("startDialog", defaultValue: "", new ConfigurableInfo("Dialog at start trigger. When empty, no custom dialog starts.", null, "", "Start dialog"));
+            stopDialog = config.Bind("stopDialog", defaultValue: "", new ConfigurableInfo("Dialog at stop trigger. When empty, no custom dialog starts.", null, "", "Stop dialog"));
+            startDialogDelay = config.Bind("startDialogDelay", defaultValue: 0, new ConfigurableInfo("Delay before dialog starts after trigger. Bound to tickrate, 40 t/s.", new ConfigAcceptableRange<int>(0, 99999), "", "Start dialog delay"));
+            stopDialogDelay = config.Bind("stopDialogDelay", defaultValue: 0, new ConfigurableInfo("Delay before dialog starts after trigger. Bound to tickrate, 40 t/s.", new ConfigAcceptableRange<int>(0, 99999), "", "Stop dialog delay"));
+            startDelay = config.Bind("startDelay", defaultValue: 0, new ConfigurableInfo("Delay before capture starts after trigger. Bound to tickrate, 40 t/s.", new ConfigAcceptableRange<int>(0, 99999), "", "Start delay"));
+            stopDelay = config.Bind("stopDelay", defaultValue: 0, new ConfigurableInfo("Delay before capture stops after trigger. Bound to tickrate, 40 t/s.", new ConfigAcceptableRange<int>(0, 99999), "", "Stop delay"));
             /*****************************************/
         }
 
@@ -151,12 +153,14 @@ namespace ProjectionScreenWindows
             height = 540f;
             curTab++;
 
-            AddComboBox(startTrigger, new Vector2(20f, height -= 40f), Enum.GetNames(typeof(TriggerTypes)), 160f, alV: OpLabel.LabelVAlignment.Top);
-            AddTextbox(startDialog, new Vector2(200f, height), width: 280f, alV: OpLabel.LabelVAlignment.Top);
+            AddTextbox(startDialog, new Vector2(20f, height -= 40f), width: 460f, alV: OpLabel.LabelVAlignment.Top);
             AddUpDown(startDialogDelay, new Vector2(500f, height - 2.5f), width: 70f, alV: OpLabel.LabelVAlignment.Top);
-            AddComboBox(stopTrigger, new Vector2(20f, height -= 180f), Enum.GetNames(typeof(TriggerTypes)), 160f, alV: OpLabel.LabelVAlignment.Top);
-            AddTextbox(stopDialog, new Vector2(200f, height), width: 280f, alV: OpLabel.LabelVAlignment.Top);
+            AddComboBox(startTrigger, new Vector2(mid(250f), height -= 70f), Enum.GetNames(typeof(TriggerTypes)), 160f, alV: OpLabel.LabelVAlignment.Top);
+            AddUpDown(startDelay, new Vector2(mid(250f) + 180f, height - 2.5f), width: 70f, alV: OpLabel.LabelVAlignment.Top);
+            AddTextbox(stopDialog, new Vector2(20f, height -= 180f), width: 460f, alV: OpLabel.LabelVAlignment.Top);
             AddUpDown(stopDialogDelay, new Vector2(500f, height - 2.5f), width: 70f, alV: OpLabel.LabelVAlignment.Top);
+            AddComboBox(stopTrigger, new Vector2(mid(250f), height -= 70f), Enum.GetNames(typeof(TriggerTypes)), 160f, alV: OpLabel.LabelVAlignment.Top);
+            AddUpDown(stopDelay, new Vector2(mid(250f) + 180f, height - 2.5f), width: 70f, alV: OpLabel.LabelVAlignment.Top);
             /*****************************************/
         }
 

@@ -4,7 +4,7 @@ The basic steps are also listed below.
 
 Download and install Visual Studio (Community): https://visualstudio.microsoft.com/
 
-Make sure to select the ".NET desktop development" workload, and at the individual components tab, select ".NET Framework 4.8 development tools".
+Make sure to select the ".NET desktop development" workload, and at the individual components tab, select ".NET Framework 4.8 development tools". Also select .NET 6.0 for the CaptureAPI program.
 
 Clone this repository, or download as ZIP and unzip. Open the project (.sln).
 
