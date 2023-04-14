@@ -36,7 +36,6 @@
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="CreateGamePNGs.cs" />
     <Compile Include="Options.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Hooks.cs" />

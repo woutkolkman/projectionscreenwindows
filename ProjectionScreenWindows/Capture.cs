@@ -169,15 +169,25 @@ namespace ProjectionScreenWindows
             base.Update(self);
 
             //behavior of puppets
-            if (self is SSOracleBehavior)
+            bool tooClose = Vector2.Distance(self?.oracle?.firstChunk?.pos ?? new Vector2(), (p?.DangerPos ?? self.player?.DangerPos ?? new Vector2())) <= 60;
+            if (self is SSOracleBehavior) {
                 (self as SSOracleBehavior).movementBehavior = SSOracleBehavior.MovementBehavior.KeepDistance;
+                if (!tooClose && (Options.puppetLooksAtWindow?.Value == null || Options.puppetLooksAtWindow.Value))
+                    (self as SSOracleBehavior).lookPoint = actualPos;
+            }
             if (self is SLOracleBehavior) {
                 (self as SLOracleBehavior).movementBehavior = SLOracleBehavior.MovementBehavior.KeepDistance;
-                if ((self as SLOracleBehavior).holdingObject is FivePebblesPong.GameController)
-                    self.lookPoint = actualPos;
+                if (Options.puppetLooksAtWindow?.Value == null || Options.puppetLooksAtWindow.Value)
+                    if (((self is SLOracleBehaviorNoMark) && !tooClose) ||
+                        ((self is SLOracleBehaviorHasMark) &&
+                        !(self as SLOracleBehaviorHasMark).playerIsAnnoyingWhenNoConversation &&
+                        !(self as SLOracleBehaviorHasMark).playerHoldingNeuronNoConvo &&
+                        (self as SLOracleBehaviorHasMark).playerAnnoyingCounter < 20))
+                        FivePebblesPong.SLGameStarter.moonLookPoint = actualPos;
             }
             if (self is MoreSlugcats.SSOracleRotBehavior && (self as MoreSlugcats.SSOracleRotBehavior).holdingObject is FivePebblesPong.GameController)
-                self.lookPoint = actualPos;
+                if (!tooClose && (Options.puppetLooksAtWindow?.Value == null || Options.puppetLooksAtWindow.Value))
+                    self.lookPoint = actualPos;
 
             //get target position type for images
             switch (posType)
