@@ -47,8 +47,10 @@ namespace ProjectionScreenWindows
                 args += " -a \"" + Options.openProgramArguments.Value + "\"";
             if (Options.framerate != null)
                 args += " -f \"" + Options.framerate.Value.ToString() + "\"";
-            if (Options.altOpenProgram != null && Options.altOpenProgram.Value)
+            if (Options.altOpenProgram?.Value != null && Options.altOpenProgram.Value)
                 args += " --alt";
+            if (Options.reduceStartupTime?.Value != null && Options.reduceStartupTime.Value)
+                args += " -s";
 
             Plugin.ME.Logger_p.LogInfo("Capture, Arguments: \"" + args + "\"");
 

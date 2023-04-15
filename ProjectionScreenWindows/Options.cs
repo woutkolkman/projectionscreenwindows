@@ -9,7 +9,7 @@ namespace ProjectionScreenWindows
     //and: https://github.com/SchuhBaum/SBCameraScroll/blob/Rain-World-v1.9/SourceCode/MainModOptions.cs
     public class Options : OptionInterface
     {
-        public static Configurable<bool> overrideAllGames, ignoreOrigPos, moveRandomly, altOpenProgram;
+        public static Configurable<bool> overrideAllGames, ignoreOrigPos, moveRandomly, altOpenProgram, reduceStartupTime;
         public static Configurable<string> windowName, processName, openProgram, openProgramArguments;
         public static Configurable<string> positionType, startTrigger, stopTrigger, startDialog, stopDialog;
         public static Configurable<int> framerate, cropLeft, cropBottom, cropRight, cropTop;
@@ -54,6 +54,7 @@ namespace ProjectionScreenWindows
             openProgram = config.Bind("openProgram", defaultValue: "", new ConfigurableInfo("If no window was found, the program will try to open a program once. It will also be closed afterwards. Leaving this empty will not start or stop any program.\nExamples:    notepad    CMD.exe    C:\\Program Files\\VideoLAN\\VLC\\vlc.exe", null, "", "Open program"));
             openProgramArguments = config.Bind("openProgramArguments", defaultValue: "", new ConfigurableInfo("Arguments to pass when opening a program.\nExamples:    /?    \\\"\\\"C:\\vids folder\\pebbsi.mp4\\\"\\\"", null, "", "Arguments"));
             altOpenProgram = config.Bind("altOpenProgram", defaultValue: false, new ConfigurableInfo("Program is opened with another method, so the game doesn't lose focus. Programs also won't close automatically afterwards.", null, "", "Don't lose focus"));
+            reduceStartupTime = config.Bind("reduceStartupTime", defaultValue: false, new ConfigurableInfo("Skip first search for window and immediately start program.", null, "", "Reduce startup time"));
             /*****************************************/
 
             /*************** Position ****************/
@@ -109,6 +110,7 @@ namespace ProjectionScreenWindows
             AddTextbox(openProgram, new Vector2(20f, height -= 40f), 460f, alH: FLabelAlignment.Right);
             AddTextbox(openProgramArguments, new Vector2(20f, height -= 40f), 460f, alH: FLabelAlignment.Right);
             AddCheckbox(altOpenProgram, new Vector2(20f, height -= 40f));
+            AddCheckbox(reduceStartupTime, new Vector2(220f, height));
             /*****************************************/
 
             /*************** Position ****************/

@@ -16,6 +16,7 @@ namespace CaptureAPI
         public static bool triedOpeningProgram = false; //tried starting other program
         public static volatile bool closeOperation = false; //close this program if true
         public static bool altOpenMethod = false; //don't lose focus, but also don't close program afterwards
+        public static bool skipFirstSearch = false; //skip seaching window and immediately start program
 
 
         public static void Main(string[] args)
@@ -55,6 +56,10 @@ namespace CaptureAPI
                         if (fps <= 0)
                             fps = 1;
                         interval = new TimeSpan(10000000 / fps);
+                        break;
+
+                    case "--sfs": case "-s": //example: ./CaptureAPI.exe -o notepad -s
+                        skipFirstSearch = true;
                         break;
                 }
             }
@@ -103,8 +108,9 @@ namespace CaptureAPI
                 prevTime = DateTime.Now;
 
                 //search for window if handle is invalid
-                if (windowHandle == WindowFinder.INVALID_HANDLE_VALUE)
+                if (!skipFirstSearch && windowHandle == WindowFinder.INVALID_HANDLE_VALUE)
                     windowHandle = WindowFinder.GetWindowHandle(captureWindow, captureProcess);
+                skipFirstSearch = false;
 
                 //try again next loop
                 if (windowHandle == WindowFinder.INVALID_HANDLE_VALUE) {
