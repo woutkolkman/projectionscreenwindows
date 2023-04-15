@@ -12,7 +12,7 @@ namespace ProjectionScreenWindows
 {
     public class Capture : FivePebblesPong.FPGame
     {
-        Process captureProcess;
+        public Process captureProcess;
         public int frame = 0;
         public DateTime measureFps = DateTime.Now;
         public FivePebblesPong.ShowMediaMovementBehavior adjusting = new FivePebblesPong.ShowMediaMovementBehavior();

@@ -33,7 +33,8 @@ namespace ProjectionScreenWindows
 
             if (stopTrigger != startTrigger && startTrigger == Options.TriggerTypes.OnConstructor && gameIsNull)
                 trigCapture = new Capture(self);
-            if (stopTrigger == Options.TriggerTypes.OnConstructor) {
+            if (stopTrigger == Options.TriggerTypes.OnConstructor || 
+                trigCapture?.captureProcess?.HasExited == true) { //when captureprocess stop trigger was not properly triggered
                 trigCapture?.Destroy();
                 trigCapture = null;
             }
@@ -55,10 +56,8 @@ namespace ProjectionScreenWindows
             }
 
             //start/stop capture
-            if (startDelay == 0 && gameIsNull && trigCapture == null) {
+            if (startDelay == 0 && gameIsNull && trigCapture == null)
                 trigCapture = new Capture(self);
-                PauseConversation(self, pause: true);
-            }
             if (startDelay >= 0)
                 startDelay--;
             if (stopDelay == 0) {
@@ -199,6 +198,8 @@ namespace ProjectionScreenWindows
 
             trigCapture?.Update(self);
             trigCapture?.Draw(new Vector2());
+            if (trigCapture != null && Options.pauseConversation?.Value != null && Options.pauseConversation.Value)
+                PauseConversation(self, pause: true);
 
             //update previous values
             if (curRoom != null) {
@@ -219,16 +220,19 @@ namespace ProjectionScreenWindows
             if (Options.pauseConversation?.Value == null || !Options.pauseConversation.Value)
                 return;
 
-            if (self is SSOracleBehavior && (self as SSOracleBehavior).conversation != null) {
-                (self as SSOracleBehavior).conversation.paused = pause;
+            if (self is SSOracleBehavior) {
+                if ((self as SSOracleBehavior).conversation != null)
+                    (self as SSOracleBehavior).conversation.paused = pause;
                 (self as SSOracleBehavior).restartConversationAfterCurrentDialoge = !pause;
             }
-            if (self is SLOracleBehaviorHasMark && (self as SLOracleBehaviorHasMark).currentConversation != null) {
-                (self as SLOracleBehaviorHasMark).currentConversation.paused = pause;
+            if (self is SLOracleBehaviorHasMark) {
+                if ((self as SLOracleBehaviorHasMark).currentConversation != null)
+                    (self as SLOracleBehaviorHasMark).currentConversation.paused = pause;
                 (self as SLOracleBehaviorHasMark).resumeConversationAfterCurrentDialoge = !pause;
             }
-            if (self is MoreSlugcats.SSOracleRotBehavior && (self as MoreSlugcats.SSOracleRotBehavior).conversation != null) {
-                (self as MoreSlugcats.SSOracleRotBehavior).conversation.paused = pause;
+            if (self is MoreSlugcats.SSOracleRotBehavior) {
+                if ((self as MoreSlugcats.SSOracleRotBehavior).conversation != null)
+                    (self as MoreSlugcats.SSOracleRotBehavior).conversation.paused = pause;
                 (self as MoreSlugcats.SSOracleRotBehavior).restartConversationAfterCurrentDialoge = !pause;
             }
         }
