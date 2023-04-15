@@ -1,5 +1,5 @@
 ### Install
-Install via the Steam Workshop: <>  
+Install via the Steam Workshop: https://steamcommunity.com/sharedfiles/filedetails/?id=2962555373  
 Also install Five Pebbles Pong: https://github.com/woutkolkman/fivepebblespong
 
 To manually install, download the most recent .zip from the [releases page](https://github.com/woutkolkman/projectionscreenwindows/releases) and extract it to "Rain World\RainWorld_Data\StreamingAssets\mods\projectionscreenwindows".
