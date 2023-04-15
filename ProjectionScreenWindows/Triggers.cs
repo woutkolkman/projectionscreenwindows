@@ -188,7 +188,7 @@ namespace ProjectionScreenWindows
                     stopDelay = Options.stopDelay.Value;
             }
 
-            //also trigger dialog when FPGame from Five Pebbles Pong changes
+            //also trigger dialog when FPGame from FivePebblesPong changes
             if (!gameIsNull && prevGameIsNull)
                 if (Options.startDialog?.Value?.Length > 0 && Options.startDialogDelay?.Value != null)
                     startDialogDelay = Options.startDialogDelay.Value;

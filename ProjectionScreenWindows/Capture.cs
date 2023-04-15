@@ -170,28 +170,7 @@ namespace ProjectionScreenWindows
         {
             base.Update(self);
 
-            //behavior of puppets
-            bool tooClose = Vector2.Distance(self?.oracle?.firstChunk?.pos ?? new Vector2(), (p?.DangerPos ?? self.player?.DangerPos ?? new Vector2())) <= 60;
-            if (self is SSOracleBehavior) {
-                (self as SSOracleBehavior).movementBehavior = SSOracleBehavior.MovementBehavior.KeepDistance;
-                if (!tooClose && (Options.puppetLooksAtWindow?.Value == null || Options.puppetLooksAtWindow.Value))
-                    (self as SSOracleBehavior).lookPoint = actualPos;
-            }
-            if (self is SLOracleBehavior) {
-                (self as SLOracleBehavior).movementBehavior = SLOracleBehavior.MovementBehavior.KeepDistance;
-                if (Options.puppetLooksAtWindow?.Value == null || Options.puppetLooksAtWindow.Value || 
-                    (self as SLOracleBehavior).holdingObject is FivePebblesPong.GameController)
-                    if (((self is SLOracleBehaviorNoMark) && !tooClose) ||
-                        ((self is SLOracleBehaviorHasMark) &&
-                        !(self as SLOracleBehaviorHasMark).playerIsAnnoyingWhenNoConversation &&
-                        !(self as SLOracleBehaviorHasMark).playerHoldingNeuronNoConvo &&
-                        (self as SLOracleBehaviorHasMark).playerAnnoyingCounter < 20))
-                        FivePebblesPong.SLGameStarter.moonLookPoint = actualPos;
-            }
-            if (self is MoreSlugcats.SSOracleRotBehavior)
-                if (!tooClose && (Options.puppetLooksAtWindow?.Value == null || Options.puppetLooksAtWindow.Value || 
-                    (self as MoreSlugcats.SSOracleRotBehavior).holdingObject is FivePebblesPong.GameController))
-                    self.lookPoint = actualPos;
+            PuppetBehavior(self);
 
             //get target position type for images
             switch (posType)
@@ -387,6 +366,66 @@ namespace ProjectionScreenWindows
             );
 
             return texOut;
+        }
+
+
+        int checkForGrabItem = 0;
+        public void PuppetBehavior(OracleBehavior self)
+        {
+            bool tooClose = Vector2.Distance(self?.oracle?.firstChunk?.pos ?? new Vector2(), (p?.DangerPos ?? self.player?.DangerPos ?? new Vector2())) <= 60;
+
+            //5P & pre-collapse Moon
+            if (self is SSOracleBehavior) {
+                (self as SSOracleBehavior).movementBehavior = SSOracleBehavior.MovementBehavior.KeepDistance;
+
+                //look at window if player is not too close
+                if (!tooClose && (Options.puppetLooksAtWindow?.Value == null || Options.puppetLooksAtWindow.Value))
+                    (self as SSOracleBehavior).lookPoint = actualPos;
+            }
+
+            //Shoreline Moon
+            if (self is SLOracleBehavior) {
+                (self as SLOracleBehavior).movementBehavior = SLOracleBehavior.MovementBehavior.KeepDistance;
+
+                //look at window if player is not interfering
+                if (Options.puppetLooksAtWindow?.Value == null || Options.puppetLooksAtWindow.Value || 
+                    (self as SLOracleBehavior).holdingObject is FivePebblesPong.GameController)
+                    if (((self is SLOracleBehaviorNoMark) && !tooClose) || 
+                        ((self is SLOracleBehaviorHasMark) && 
+                        !(self as SLOracleBehaviorHasMark).playerIsAnnoyingWhenNoConversation && 
+                        !(self as SLOracleBehaviorHasMark).playerHoldingNeuronNoConvo && 
+                        (self as SLOracleBehaviorHasMark).playerAnnoyingCounter < 20))
+                        FivePebblesPong.SLGameStarter.moonLookPoint = actualPos;
+
+                //prevent moon from auto releasing controller if controller was grabbed
+                if (self is SLOracleBehaviorHasMark && (self as SLOracleBehaviorHasMark).holdingObject is FivePebblesPong.GameController)
+                    (self as SLOracleBehaviorHasMark).describeItemCounter = 0;
+            }
+
+            //Rivulet's 5P
+            if (self is MoreSlugcats.SSOracleRotBehavior) {
+                //look at window if player is not too close or if holding gamecontroller
+                if (!tooClose && (Options.puppetLooksAtWindow?.Value == null || Options.puppetLooksAtWindow.Value || 
+                    (self as MoreSlugcats.SSOracleRotBehavior).holdingObject is FivePebblesPong.GameController))
+                    self.lookPoint = actualPos;
+
+                //grab gamecontroller if close enough
+                checkForGrabItem--;
+                if (checkForGrabItem > 0)
+                    return;
+                checkForGrabItem = 240;
+                /*//doesn't work as expected because FivePebblesPong currently does not start RM games if puppet is holding an object
+                if ((self as MoreSlugcats.SSOracleRotBehavior).holdingObject != null)
+                    return;
+                Plugin.ME.Logger_p.LogInfo("Capture.PuppetBehavior, Checking for GrabObject");
+
+                for (int i = 0; i < self.oracle.room.physicalObjects.Length; i++)
+                    for (int j = 0; j < self.oracle.room.physicalObjects[i].Count; j++)
+                        if (self.oracle.room.physicalObjects[i][j] is FivePebblesPong.GameController && self.oracle.room.physicalObjects[i][j].grabbedBy.Count <= 0)
+                            if (30f >= Vector2.Distance(self.oracle.room.physicalObjects[i][j].firstChunk.pos, self.oracle.bodyChunks[0].pos))
+                                (self as MoreSlugcats.SSOracleRotBehavior).GrabObject(self.oracle.room.physicalObjects[i][j]);
+                */
+            }
         }
     }
 }
