@@ -1,0 +1,11 @@
+Project any program on a in-game ProjectionScreen. You'll need a second monitor to display the window which will be captured. This plugin starts a background process which is basically Snipping Tool at 30 FPS. Also download Five Pebbles Pong, because this plugin is programmed as an add-on game.
+
+This may not work on all PC's.
+
+Five Pebbles Pong: https://steamcommunity.com/sharedfiles/filedetails/?id=2942659714
+Source code is here: https://github.com/woutkolkman/projectionscreenwindows
+If you want an actual video player, check out forthbridge's five-pebbles-bad-apple!: https://github.com/forthbridge/five-pebbles-bad-apple
+
+Known bugs:
+- Flashing "ghost" window in bottom left corner, fixing this would require rewriting relatively complex parts of the plugin.
+- Delay doesn't work with OnConstructor triggers.
