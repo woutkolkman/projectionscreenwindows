@@ -87,6 +87,6 @@
   <PropertyGroup>
     <PostBuildEvent>echo
 xcopy /y /d "$(ProjectDir)bin\Release\ProjectionScreenWindows.dll" "$(ProjectDir)bin\projectionscreenwindows\plugins\"
-xcopy /u /y "$(ProjectDir)bin\Release\ProjectionScreenWindows.dll" "C:\Users\Wout Kolkman\Documents\Games\Steam\SteamApps\common\Rain World\RainWorld_Data\StreamingAssets\mods\projectionscreenwindows\plugins\" || cd .</PostBuildEvent>
+xcopy /u /y "$(ProjectDir)bin\Release\ProjectionScreenWindows.dll" "C:\Program Files (x86)\Steam\SteamApps\common\Rain World\RainWorld_Data\StreamingAssets\mods\projectionscreenwindows\plugins\" || cd .</PostBuildEvent>
   </PropertyGroup>
 </Project>

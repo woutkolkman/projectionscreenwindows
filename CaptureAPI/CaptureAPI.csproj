@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="echo&#xD;&#xA;xcopy /y /d &quot;$(ProjectDir)bin\Release\net6.0\&quot; &quot;$(ProjectDir)..\ProjectionScreenWindows\bin\projectionscreenwindows\plugins\&quot; /E&#xD;&#xA;&#xD;&#xA;xcopy /u /y &quot;$(ProjectDir)bin\Release\net6.0\&quot; &quot;C:\Users\Wout Kolkman\Documents\Games\Steam\SteamApps\common\Rain World\RainWorld_Data\StreamingAssets\mods\projectionscreenwindows\plugins\&quot; || cd ." />
+    <Exec Command="echo&#xD;&#xA;xcopy /y /d &quot;$(ProjectDir)bin\Release\net6.0\&quot; &quot;$(ProjectDir)..\ProjectionScreenWindows\bin\projectionscreenwindows\plugins\&quot; /E&#xD;&#xA;&#xD;&#xA;xcopy /u /y &quot;$(ProjectDir)bin\Release\net6.0\&quot; &quot;C:\Program Files (x86)\Steam\SteamApps\common\Rain World\RainWorld_Data\StreamingAssets\mods\projectionscreenwindows\plugins\&quot; || cd ." />
   </Target>
 
 </Project>
