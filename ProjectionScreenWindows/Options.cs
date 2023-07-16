@@ -56,9 +56,9 @@ namespace ProjectionScreenWindows
             openProgramArguments = config.Bind("openProgramArguments", defaultValue: "", new ConfigurableInfo("Arguments to pass when opening a program.\nExamples:    /?    \\\"\\\"C:\\vids folder\\pebbsi.mp4\\\"\\\"", null, "", "Arguments"));
             altOpenProgram = config.Bind("altOpenProgram", defaultValue: false, new ConfigurableInfo("Program is opened with another method, so the game doesn't lose focus. Programs also won't close automatically afterwards.", null, "", "Don't lose focus"));
             reduceStartupTime = config.Bind("reduceStartupTime", defaultValue: false, new ConfigurableInfo("Skip first search for window and immediately start program.", null, "", "Reduce startup time"));
-            chromaKeyColor = config.Bind("chromaKeyingColor", defaultValue: Color.green, new ConfigurableInfo("Configured color for chroma keying option.", null, "", ""));
+            chromaKeyColor = config.Bind("chromaKeyColor", defaultValue: Color.green, new ConfigurableInfo("Configured color for chroma keying option.", null, "", ""));
             chromaKeying = config.Bind("chromaKeying", defaultValue: false, new ConfigurableInfo("Pixels with the configured value become transparent. Computation intensive task.", null, "", "Chroma keying"));
-            chromaKeyError = config.Bind("chromaKeyingError", defaultValue: 5000, new ConfigurableInfo("Higher value will replace more colors.", new ConfigAcceptableRange<int>(1, int.MaxValue), "", "Chroma key error"));
+            chromaKeyError = config.Bind("chromaKeyError", defaultValue: 5000, new ConfigurableInfo("Higher value will replace more colors.", new ConfigAcceptableRange<int>(1, int.MaxValue), "", "Chroma key error"));
             /*****************************************/
 
             /*************** Position ****************/
