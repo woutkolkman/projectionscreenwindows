@@ -18,6 +18,32 @@ namespace ProjectionScreenWindows
         static bool prevGameIsNull = true;
 
 
+        //trigger start delay which is updated in CheckUpdateTriggers
+        public static void StartCount()
+        {
+            //dialog
+            if (Options.startDialog?.Value?.Length > 0 && Options.startDialogDelay?.Value != null)
+                startDialogDelay = Options.startDialogDelay.Value;
+
+            //capture
+            if (Options.startDelay?.Value != null)
+                startDelay = Options.startDelay.Value;
+        }
+
+
+        //trigger stop delay which is updated in CheckUpdateTriggers
+        public static void StopCount()
+        {
+            //dialog
+            if (Options.stopDialog?.Value?.Length > 0 && Options.stopDialogDelay?.Value != null)
+                stopDialogDelay = Options.stopDialogDelay.Value;
+
+            //capture
+            if (Options.stopDelay?.Value != null)
+                stopDelay = Options.stopDelay.Value;
+        }
+
+
         public static void CheckCtorTriggers(OracleBehavior self, bool gameIsNull)
         {
             Options.TriggerTypes GetTriggerType(Configurable<string> option) {
@@ -31,10 +57,19 @@ namespace ProjectionScreenWindows
             startTrigger = GetTriggerType(Options.startTrigger);
             stopTrigger = GetTriggerType(Options.stopTrigger);
 
-            if (stopTrigger != startTrigger && startTrigger == Options.TriggerTypes.OnConstructor && gameIsNull)
-                trigCapture = new Capture(self);
-            if (stopTrigger == Options.TriggerTypes.OnConstructor || 
-                trigCapture?.captureProcess?.HasExited == true) { //when captureprocess stop trigger was not properly triggered
+            if (startTrigger == Options.TriggerTypes.OnConstructor && gameIsNull) {
+                Plugin.ME.Logger_p.LogInfo("CheckCtorTriggers, Triggered start");
+                StartCount();
+            }
+
+            if (stopTrigger == Options.TriggerTypes.OnConstructor) {
+                Plugin.ME.Logger_p.LogInfo("CheckCtorTriggers, Triggered stop");
+                StopCount();
+            }
+
+            //when captureprocess stop trigger was not properly triggered
+            if (trigCapture?.captureProcess?.HasExited == true) {
+                Plugin.ME.Logger_p.LogWarning("CheckCtorTriggers, Stop trigger improperly triggered, destroying existing Capture");
                 trigCapture?.Destroy();
                 trigCapture = null;
             }
@@ -166,26 +201,12 @@ namespace ProjectionScreenWindows
 
             if (TriggerActive(startTrigger)) {
                 Plugin.ME.Logger_p.LogInfo("CheckUpdateTriggers, Triggered start");
-
-                //dialog
-                if (Options.startDialog?.Value?.Length > 0 && Options.startDialogDelay?.Value != null)
-                    startDialogDelay = Options.startDialogDelay.Value;
-
-                //capture
-                if (Options.startDelay?.Value != null)
-                    startDelay = Options.startDelay.Value;
+                StartCount();
             }
 
             if (TriggerActive(stopTrigger)) {
                 Plugin.ME.Logger_p.LogInfo("CheckUpdateTriggers, Triggered stop");
-
-                //dialog
-                if (Options.stopDialog?.Value?.Length > 0 && Options.stopDialogDelay?.Value != null)
-                    stopDialogDelay = Options.stopDialogDelay.Value;
-
-                //capture
-                if (Options.stopDelay?.Value != null)
-                    stopDelay = Options.stopDelay.Value;
+                StopCount();
             }
 
             //also trigger dialog when FPGame from FivePebblesPong changes
