@@ -65,8 +65,7 @@ namespace ProjectionScreenWindows
             //TODO
 
             //remove from gamelist
-            if (FivePebblesPong.Plugin.amountOfGames > gameNrCapture)
-                FivePebblesPong.Plugin.amountOfGames--;
+            FivePebblesPong.Plugin.amountOfGames--;
             gameNrCapture = -1;
         }
 
@@ -79,6 +78,7 @@ namespace ProjectionScreenWindows
         }
 
 
+        //test in options menu
         static Capture testCapture = null;
         static void RainWorldUpdateHook(On.RainWorld.orig_Update orig, RainWorld self)
         {
@@ -105,6 +105,7 @@ namespace ProjectionScreenWindows
         }
 
 
+        //replace all SS games with Capture
         static int gameNrCapture = -1;
         [MethodImpl(MethodImplOptions.NoInlining)]
         public static FivePebblesPong.FPGame FivePebblesPongPlugin_SSGetNewFPGame_RuntimeDetour(Func<SSOracleBehavior, int, FivePebblesPong.FPGame> orig, SSOracleBehavior ob, int nr)
@@ -121,6 +122,7 @@ namespace ProjectionScreenWindows
         }
 
 
+        //replace RM Pong with Capture
         [MethodImpl(MethodImplOptions.NoInlining)]
         public static FivePebblesPong.FPGame FivePebblesPongPlugin_RMGetNewFPGame_RuntimeDetour(Func<MoreSlugcats.SSOracleRotBehavior, FivePebblesPong.FPGame> orig, MoreSlugcats.SSOracleRotBehavior ob)
         {
@@ -130,6 +132,7 @@ namespace ProjectionScreenWindows
         }
 
 
+        //replace SL Pong with Capture
         [MethodImpl(MethodImplOptions.NoInlining)]
         public static FivePebblesPong.FPGame FivePebblesPongPlugin_SLGetNewFPGame_RuntimeDetour(Func<SLOracleBehavior, FivePebblesPong.FPGame> orig, SLOracleBehavior ob)
         {
