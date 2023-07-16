@@ -8,4 +8,3 @@ If you want an actual video player, check out forthbridge's five-pebbles-bad-app
 
 Known bugs:
 - Flashing "ghost" window in bottom left corner, fixing this would require rewriting relatively complex parts of the plugin.
-- Delay doesn't work with OnConstructor triggers.

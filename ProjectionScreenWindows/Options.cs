@@ -12,10 +12,11 @@ namespace ProjectionScreenWindows
         public static Configurable<bool> overrideAllGames, ignoreOrigPos, moveRandomly, altOpenProgram, reduceStartupTime;
         public static Configurable<string> windowName, processName, openProgram, openProgramArguments;
         public static Configurable<string> positionType, startTrigger, stopTrigger, startDialog, stopDialog;
-        public static Configurable<int> framerate, cropLeft, cropBottom, cropRight, cropTop;
+        public static Configurable<int> framerate, cropLeft, cropBottom, cropRight, cropTop, chromaKeyError;
         public static Configurable<int> startDialogDelay, stopDialogDelay, startDelay, stopDelay;
         public static Configurable<float> offsetPosX, offsetPosY;
-        public static Configurable<bool> puppetLooksAtWindow, pauseConversation;
+        public static Configurable<bool> puppetLooksAtWindow, pauseConversation, chromaKeying;
+        public static Configurable<Color> chromaKeyColor;
         public static OpSimpleButton testButton;
         public static OpImage testFrame;
         public int curTab;
@@ -55,6 +56,9 @@ namespace ProjectionScreenWindows
             openProgramArguments = config.Bind("openProgramArguments", defaultValue: "", new ConfigurableInfo("Arguments to pass when opening a program.\nExamples:    /?    \\\"\\\"C:\\vids folder\\pebbsi.mp4\\\"\\\"", null, "", "Arguments"));
             altOpenProgram = config.Bind("altOpenProgram", defaultValue: false, new ConfigurableInfo("Program is opened with another method, so the game doesn't lose focus. Programs also won't close automatically afterwards.", null, "", "Don't lose focus"));
             reduceStartupTime = config.Bind("reduceStartupTime", defaultValue: false, new ConfigurableInfo("Skip first search for window and immediately start program.", null, "", "Reduce startup time"));
+            chromaKeyColor = config.Bind("chromaKeyingColor", defaultValue: Color.green, new ConfigurableInfo("Configured color for chroma keying option.", null, "", ""));
+            chromaKeying = config.Bind("chromaKeying", defaultValue: false, new ConfigurableInfo("Pixels with the configured value become transparent. Computation intensive task.", null, "", "Chroma keying"));
+            chromaKeyError = config.Bind("chromaKeyingError", defaultValue: 1000, new ConfigurableInfo("Higher value will replace more colors.", new ConfigAcceptableRange<int>(1, int.MaxValue), "", "Chroma key error"));
             /*****************************************/
 
             /*************** Position ****************/
@@ -74,10 +78,10 @@ namespace ProjectionScreenWindows
             stopTrigger = config.Bind("stopTrigger", defaultValue: TriggerTypes.None.ToString(), new ConfigurableInfo("When to stop the capture program. By default it's only stopped when dropping the controller.", null, "", "Stop trigger"));
             startDialog = config.Bind("startDialog", defaultValue: "", new ConfigurableInfo("Dialog at start trigger. When empty, no custom dialog starts.", null, "", "Start dialog"));
             stopDialog = config.Bind("stopDialog", defaultValue: "", new ConfigurableInfo("Dialog at stop trigger. When empty, no custom dialog starts.", null, "", "Stop dialog"));
-            startDialogDelay = config.Bind("startDialogDelay", defaultValue: 0, new ConfigurableInfo("Delay before dialog starts after trigger. Bound to tickrate, 40 t/s.", new ConfigAcceptableRange<int>(0, 99999), "", "Start dialog delay"));
-            stopDialogDelay = config.Bind("stopDialogDelay", defaultValue: 0, new ConfigurableInfo("Delay before dialog starts after trigger. Bound to tickrate, 40 t/s.", new ConfigAcceptableRange<int>(0, 99999), "", "Stop dialog delay"));
-            startDelay = config.Bind("startDelay", defaultValue: 0, new ConfigurableInfo("Delay before capture starts after trigger. Bound to tickrate, 40 t/s.", new ConfigAcceptableRange<int>(0, 99999), "", "Start delay"));
-            stopDelay = config.Bind("stopDelay", defaultValue: 0, new ConfigurableInfo("Delay before capture stops after trigger. Bound to tickrate, 40 t/s.", new ConfigAcceptableRange<int>(0, 99999), "", "Stop delay"));
+            startDialogDelay = config.Bind("startDialogDelay", defaultValue: 0, new ConfigurableInfo("Delay before dialog starts after trigger. Bound to tickrate, 40 t/s.", new ConfigAcceptableRange<int>(0, int.MaxValue), "", "Start dialog delay"));
+            stopDialogDelay = config.Bind("stopDialogDelay", defaultValue: 0, new ConfigurableInfo("Delay before dialog starts after trigger. Bound to tickrate, 40 t/s.", new ConfigAcceptableRange<int>(0, int.MaxValue), "", "Stop dialog delay"));
+            startDelay = config.Bind("startDelay", defaultValue: 0, new ConfigurableInfo("Delay before capture starts after trigger. Bound to tickrate, 40 t/s.", new ConfigAcceptableRange<int>(0, int.MaxValue), "", "Start delay"));
+            stopDelay = config.Bind("stopDelay", defaultValue: 0, new ConfigurableInfo("Delay before capture stops after trigger. Bound to tickrate, 40 t/s.", new ConfigAcceptableRange<int>(0, int.MaxValue), "", "Stop delay"));
             /*****************************************/
         }
 
@@ -111,6 +115,11 @@ namespace ProjectionScreenWindows
             AddTextbox(openProgramArguments, new Vector2(20f, height -= 40f), 460f, alH: FLabelAlignment.Right);
             AddCheckbox(altOpenProgram, new Vector2(20f, height -= 40f));
             AddCheckbox(reduceStartupTime, new Vector2(220f, height));
+
+            height -= 40f;
+            AddColorPicker(chromaKeyColor, new Vector2(20f, height - 166f));
+            AddCheckbox(chromaKeying, new Vector2(220f, height -= 40f));
+            AddDragger(chromaKeyError, new Vector2(220f, height -= 40f));
             /*****************************************/
 
             /*************** Position ****************/
@@ -122,10 +131,10 @@ namespace ProjectionScreenWindows
             AddTextboxFloat(offsetPosY, new Vector2(mid() - 180f, height -= 40f), 70);
             AddCheckbox(moveRandomly, new Vector2(mid() + 30f, height));
             AddComboBox(positionType, new Vector2(mid() - 180f, height -= 40f), Enum.GetNames(typeof(PositionTypes)), alH: FLabelAlignment.Right);
-            AddUpDown(cropTop, new Vector2(mid(60f), height = mid() + 35f), alV: OpLabel.LabelVAlignment.Top);
-            AddUpDown(cropLeft, new Vector2(mid(60f) - 50f, height -= 35f), alH: FLabelAlignment.Left);
-            AddUpDown(cropRight, new Vector2(mid(60f) + 50f, height), alH: FLabelAlignment.Right);
-            AddUpDown(cropBottom, new Vector2(mid(60f), height -= 35f), alV: OpLabel.LabelVAlignment.Bottom);
+            AddUpDown(cropTop, new Vector2(mid(60f), height = mid() + 40f), alV: OpLabel.LabelVAlignment.Top);
+            AddUpDown(cropLeft, new Vector2(mid(60f) - 60f, height -= 40f), alH: FLabelAlignment.Left);
+            AddUpDown(cropRight, new Vector2(mid(60f) + 60f, height), alH: FLabelAlignment.Right);
+            AddUpDown(cropBottom, new Vector2(mid(60f), height -= 40f), alV: OpLabel.LabelVAlignment.Bottom);
             /*****************************************/
 
             /***************** Test ******************/
@@ -349,6 +358,20 @@ namespace ProjectionScreenWindows
             {
                 box,
                 label
+            });
+        }
+
+
+        private void AddColorPicker(Configurable<Color> option, Vector2 pos)
+        {
+            OpColorPicker colorPicker = new OpColorPicker(option, pos)
+            {
+                description = option.info.description
+            };
+
+            Tabs[curTab].AddItems(new UIelement[]
+            {
+                colorPicker
             });
         }
 

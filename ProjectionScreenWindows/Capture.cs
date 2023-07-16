@@ -259,11 +259,22 @@ namespace ProjectionScreenWindows
             }
             imgLoadMtx.ReleaseMutex();
 
-            if (newFrame?.width <= 0 || newFrame.height <= 0) {
+            if (newFrame == null || newFrame.width <= 0 || newFrame.height <= 0) {
                 Texture2D.Destroy(newFrame);
                 return null;
             }
             texLoiter.Enqueue(newFrame); //prevents memory leak
+
+            //chroma keying option
+            if (Options.chromaKeying?.Value == true) {
+                Color[] pixels = newFrame.GetPixels(0, 0, newFrame.width, newFrame.height);
+                int error = Options.chromaKeyError?.Value ?? 1;
+                for (int i = 0; i < pixels.Length; i++)
+                    if (pixels[i] / error == Options.chromaKeyColor?.Value / error)
+                        pixels[i] = Color.clear;
+                newFrame.SetPixels(pixels);
+                newFrame.Apply();
+            }
 
             newFrame = AddTransparentBorder(ref newFrame, cropFrames);
             frame++;
