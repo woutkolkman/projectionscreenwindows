@@ -1,6 +1,6 @@
 Project any program on a in-game ProjectionScreen. You'll need a second monitor to display the window which will be captured. This plugin starts a background process which is basically Snipping Tool at 30 FPS. Also download Five Pebbles Pong, because this plugin is programmed as an add-on game.
 
-This may not work on all PC's.
+This may not work on all PC's. If you don't get any output, check if you have .NET Runtime 6.0.15 installed: https://dotnet.microsoft.com/en-us/download/dotnet/6.0 
 
 Five Pebbles Pong: https://steamcommunity.com/sharedfiles/filedetails/?id=2942659714
 Source code is here: https://github.com/woutkolkman/projectionscreenwindows
