@@ -296,13 +296,22 @@ namespace ProjectionScreenWindows
         public int droppedFrames = 0;
         public void DataReceivedEvent(object sender, DataReceivedEventArgs e)
         {
+            //empty console queue (for in options menu) if not in use
+            while (Options.consoleQueue.Count > 3)
+                if (!Options.consoleQueue.TryDequeue(out _))
+                    break;
+
             if (String.IsNullOrEmpty(e?.Data)) {
-                Plugin.ME.Logger_p.LogInfo("Capture.DataReceivedEvent, Data null or empty");
+                const string msg = "Capture.DataReceivedEvent, Data null or empty";
+                Plugin.ME.Logger_p.LogInfo(msg);
+                Options.consoleQueue.Enqueue(msg);
                 return;
             }
 
             if (imgLoad.Count > 5) {
-                Plugin.ME.Logger_p.LogInfo("Capture.DataReceivedEvent, Byte[] queue too large, dropping frame... [" + droppedFrames++ + "]");
+                string msg = "Capture.DataReceivedEvent, Byte[] queue too large, dropping frame... [" + droppedFrames++ + "]";
+                Plugin.ME.Logger_p.LogInfo(msg);
+                Options.consoleQueue.Enqueue(String.Copy(msg));
                 return;
             }
 
@@ -313,19 +322,27 @@ namespace ProjectionScreenWindows
                 //File.WriteAllBytes("C:\\test\\test.png", bytes);
             } catch (FormatException) {
                 Plugin.ME.Logger_p.LogInfo("Capture.DataReceivedEvent, \"" + e.Data + "\"");
+                Options.consoleQueue.Enqueue(String.Copy(e.Data));
                 return;
             } catch (ArgumentNullException ex) {
-                Plugin.ME.Logger_p.LogInfo("Capture.DataReceivedEvent, Error parsing data: " + ex.ToString());
+                string msg = "Capture.DataReceivedEvent, Error parsing data: " + ex.ToString();
+                Plugin.ME.Logger_p.LogInfo(msg);
+                Options.consoleQueue.Enqueue(String.Copy(msg));
                 return;
             }
 
-            if (firstEventMsg)
-                Plugin.ME.Logger_p.LogInfo("Capture.DataReceivedEvent, Received first valid frame");
+            if (firstEventMsg) {
+                const string msg = "Capture.DataReceivedEvent, Received first valid frame";
+                Plugin.ME.Logger_p.LogInfo(msg);
+                Options.consoleQueue.Enqueue(msg);
+            }
             firstEventMsg = false;
 
             //the byte array MUST be queued, calling the Texture2D ctor here crashes the game apparently
             if (!imgLoadMtx.WaitOne(50)) {
-                Plugin.ME.Logger_p.LogInfo("Capture.DataReceivedEvent, Mutex timeout");
+                const string msg = "Capture.DataReceivedEvent, Mutex timeout";
+                Plugin.ME.Logger_p.LogInfo(msg);
+                Options.consoleQueue.Enqueue(msg);
                 return;
             }
             imgLoad.Enqueue(imageBase64);

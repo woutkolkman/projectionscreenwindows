@@ -1,5 +1,7 @@
 ﻿using Menu.Remix.MixedUI;
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
@@ -19,6 +21,9 @@ namespace ProjectionScreenWindows
         public static Configurable<Color> chromaKeyColor;
         public static OpSimpleButton testButton;
         public static OpImage testFrame;
+        public static OpLabel consoleLabel;
+        public static ConcurrentQueue<string> consoleQueue = new ConcurrentQueue<string>();
+        public List<string> consoleList = new List<string>();
         public int curTab;
 
         public enum PositionTypes
@@ -162,7 +167,13 @@ namespace ProjectionScreenWindows
             testButton.OnClick += TestButtonOnClickHandler;
             testButton.OnReactivate += TestButtonUpdate;
             TestButtonUpdate();
-            Tabs[curTab].AddItems(new UIelement[] { backgroundImg, tipsText, testFrame, testButton });
+            consoleLabel = new OpLabel(new Vector2(0f, 60f), new Vector2(600f, 540f), "", FLabelAlignment.Left)
+            {
+                verticalAlignment = OpLabel.LabelVAlignment.Bottom,
+                autoWrap = true
+            };
+
+            Tabs[curTab].AddItems(new UIelement[] { backgroundImg, tipsText, testFrame, testButton, consoleLabel });
             /*****************************************/
 
             /*************** Triggers ****************/
@@ -178,6 +189,26 @@ namespace ProjectionScreenWindows
             AddComboBox(stopTrigger, new Vector2(mid(250f), height -= 70f), Enum.GetNames(typeof(TriggerTypes)), 160f, alV: OpLabel.LabelVAlignment.Top);
             AddUpDown(stopDelay, new Vector2(mid(250f) + 180f, height - 2.5f), width: 70f, alV: OpLabel.LabelVAlignment.Top);
             /*****************************************/
+        }
+
+
+        public override void Update()
+        {
+            base.Update();
+
+            //add from buffer to list
+            string fromQueue;
+            while (consoleQueue.TryDequeue(out fromQueue))
+                consoleList.Add(fromQueue);
+
+            //empty list if full
+            while (consoleList.Count > 8)
+                consoleList.RemoveAt(0);
+
+            string text = "";
+            foreach (string msg in consoleList)
+                text += msg + Environment.NewLine;
+            consoleLabel.text = text;
         }
 
 
