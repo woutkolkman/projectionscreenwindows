@@ -8,7 +8,7 @@ using System.Security.Permissions;
 namespace ProjectionScreenWindows
 {
     //also edit version in "modinfo.json"
-    [BepInPlugin("maxi-mol.projectionscreenwindows", "ProjectionScreenWindows", "0.1.1")] //(GUID, mod name, mod version)
+    [BepInPlugin("maxi-mol.projectionscreenwindows", "ProjectionScreenWindows", "0.1.2")] //(GUID, mod name, mod version)
     public class Plugin : BaseUnityPlugin
     {
         //for accessing logger https://rainworldmodding.miraheze.org/wiki/Code_Environments

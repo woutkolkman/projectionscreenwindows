@@ -1,7 +1,7 @@
 {
   "id": "maxi-mol.projectionscreenwindows",
   "name": "ProjectionScreenWindows",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "authors": "Maxi Mol",
   "description": "Project any program on a in-game ProjectionScreen.",
   "requirements": ["maxi-mol.fivepebblespong"],
