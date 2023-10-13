@@ -16,6 +16,7 @@ namespace ProjectionScreenWindows
         static int startDialogDelay = -1, stopDialogDelay = -1;
         static int startDelay = -1, stopDelay = -1;
         static bool prevGameIsNull = true;
+        static bool prevGameIsCapture = false;
 
 
         //trigger start delay which is updated in CheckUpdateTriggers
@@ -44,7 +45,7 @@ namespace ProjectionScreenWindows
         }
 
 
-        public static void CheckCtorTriggers(OracleBehavior self, bool gameIsNull)
+        public static void CheckCtorTriggers(OracleBehavior self, FivePebblesPong.FPGame game)
         {
             Options.TriggerTypes GetTriggerType(Configurable<string> option) {
                 if (option?.Value != null)
@@ -57,7 +58,7 @@ namespace ProjectionScreenWindows
             startTrigger = GetTriggerType(Options.startTrigger);
             stopTrigger = GetTriggerType(Options.stopTrigger);
 
-            if (startTrigger == Options.TriggerTypes.OnConstructor && gameIsNull) {
+            if (startTrigger == Options.TriggerTypes.OnConstructor && game == null) {
                 Plugin.ME.Logger_p.LogInfo("CheckCtorTriggers, Triggered start");
                 StartCount();
             }
@@ -76,7 +77,7 @@ namespace ProjectionScreenWindows
         }
 
 
-        public static void CheckUpdateTriggers(OracleBehavior self, bool gameIsNull)
+        public static void CheckUpdateTriggers(OracleBehavior self, FivePebblesPong.FPGame game)
         {
             //start dialog
             if (self?.dialogBox != null) {
@@ -91,7 +92,7 @@ namespace ProjectionScreenWindows
             }
 
             //start/stop capture
-            if (startDelay == 0 && gameIsNull && trigCapture == null)
+            if (startDelay == 0 && game == null && trigCapture == null)
                 trigCapture = new Capture(self);
             if (startDelay >= 0)
                 startDelay--;
@@ -104,7 +105,7 @@ namespace ProjectionScreenWindows
                 stopDelay--;
 
             //prevent starting two capture instances at once
-            if (!gameIsNull) {
+            if (game != null) {
                 trigCapture?.Destroy();
                 trigCapture = null;
             }
@@ -210,10 +211,10 @@ namespace ProjectionScreenWindows
             }
 
             //also trigger dialog when FPGame from FivePebblesPong changes
-            if (!gameIsNull && prevGameIsNull)
+            if (game != null && prevGameIsNull && game is Capture)
                 if (Options.startDialog?.Value?.Length > 0 && Options.startDialogDelay?.Value != null)
                     startDialogDelay = Options.startDialogDelay.Value;
-            if (gameIsNull && !prevGameIsNull)
+            if (game == null && !prevGameIsNull && prevGameIsCapture)
                 if (Options.stopDialog?.Value?.Length > 0 && Options.stopDialogDelay?.Value != null)
                     stopDialogDelay = Options.stopDialogDelay.Value;
 
@@ -232,7 +233,8 @@ namespace ProjectionScreenWindows
             prevConvActive = curConvActive;
             prevPlayerAlive = curPlayerAlive;
             prevAction = curAction;
-            prevGameIsNull = gameIsNull;
+            prevGameIsNull = game == null;
+            prevGameIsCapture = game is Capture;
         }
 
 

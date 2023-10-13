@@ -148,7 +148,7 @@ namespace ProjectionScreenWindows
         {
             Plugin.ME.Logger_p.LogInfo("SSOracleBehaviorCtorHook");
             orig(self, oracle);
-            Triggers.CheckCtorTriggers(self, FivePebblesPong.SSGameStarter.starter?.game == null);
+            Triggers.CheckCtorTriggers(self, FivePebblesPong.SSGameStarter.starter?.game);
         }
 
 
@@ -157,7 +157,7 @@ namespace ProjectionScreenWindows
         {
             Plugin.ME.Logger_p.LogInfo("SLOracleBehaviorCtorHook");
             orig(self, oracle);
-            Triggers.CheckCtorTriggers(self, FivePebblesPong.SLGameStarter.starter?.game == null);
+            Triggers.CheckCtorTriggers(self, FivePebblesPong.SLGameStarter.starter?.game);
         }
 
 
@@ -166,7 +166,7 @@ namespace ProjectionScreenWindows
         {
             Plugin.ME.Logger_p.LogInfo("MoreSlugcatsSSOracleRotBehaviorCtorHook");
             orig(self, oracle);
-            Triggers.CheckCtorTriggers(self, FivePebblesPong.RMGameStarter.starter?.game == null);
+            Triggers.CheckCtorTriggers(self, FivePebblesPong.RMGameStarter.starter?.game);
         }
 
 
@@ -174,7 +174,7 @@ namespace ProjectionScreenWindows
         static void SSOracleBehaviorUpdateHook(On.SSOracleBehavior.orig_Update orig, SSOracleBehavior self, bool eu)
         {
             orig(self, eu);
-            Triggers.CheckUpdateTriggers(self, FivePebblesPong.SSGameStarter.starter?.game == null);
+            Triggers.CheckUpdateTriggers(self, FivePebblesPong.SSGameStarter.starter?.game);
         }
 
 
@@ -182,7 +182,7 @@ namespace ProjectionScreenWindows
         static void SLOracleBehaviorUpdateHook(On.SLOracleBehavior.orig_Update orig, SLOracleBehavior self, bool eu)
         {
             orig(self, eu);
-            Triggers.CheckUpdateTriggers(self, FivePebblesPong.SLGameStarter.starter?.game == null);
+            Triggers.CheckUpdateTriggers(self, FivePebblesPong.SLGameStarter.starter?.game);
         }
 
 
@@ -190,7 +190,7 @@ namespace ProjectionScreenWindows
         static void MoreSlugcatsSSOracleRotBehaviorUpdateHook(On.MoreSlugcats.SSOracleRotBehavior.orig_Update orig, MoreSlugcats.SSOracleRotBehavior self, bool eu)
         {
             orig(self, eu);
-            Triggers.CheckUpdateTriggers(self, FivePebblesPong.RMGameStarter.starter?.game == null);
+            Triggers.CheckUpdateTriggers(self, FivePebblesPong.RMGameStarter.starter?.game);
         }
         /******************************************************************************************/
     }
