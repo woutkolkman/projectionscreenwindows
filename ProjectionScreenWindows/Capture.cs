@@ -308,15 +308,8 @@ namespace ProjectionScreenWindows
                 return;
             }
 
-            if (imgLoad.Count > 5) {
-                string msg = "Capture.DataReceivedEvent, Byte[] queue too large, dropping frame... [" + droppedFrames++ + "]";
-                Plugin.ME.Logger_p.LogInfo(msg);
-                Options.consoleQueue.Enqueue(String.Copy(msg));
-                return;
-            }
-
             //every newline is a frame
-            byte[] imageBase64 = new byte[0];
+            byte[] imageBase64;
             try {
                 imageBase64 = Convert.FromBase64String(e.Data);
                 //File.WriteAllBytes("C:\\test\\test.png", bytes);
@@ -326,6 +319,13 @@ namespace ProjectionScreenWindows
                 return;
             } catch (ArgumentNullException ex) {
                 string msg = "Capture.DataReceivedEvent, Error parsing data: " + ex.ToString();
+                Plugin.ME.Logger_p.LogInfo(msg);
+                Options.consoleQueue.Enqueue(String.Copy(msg));
+                return;
+            }
+
+            if (imgLoad.Count > 5) {
+                string msg = "Capture.DataReceivedEvent, Byte[] queue too large, dropping frame... [" + droppedFrames++ + "]";
                 Plugin.ME.Logger_p.LogInfo(msg);
                 Options.consoleQueue.Enqueue(String.Copy(msg));
                 return;
