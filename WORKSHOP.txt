@@ -6,5 +6,6 @@ Five Pebbles Pong: https://steamcommunity.com/sharedfiles/filedetails/?id=294265
 Source code is here: https://github.com/woutkolkman/projectionscreenwindows
 If you want an actual video player, check out forthbridge's five-pebbles-bad-apple!: https://github.com/forthbridge/five-pebbles-bad-apple
 
-Known bugs:
+Known bugs/issues:
 - Flashing "ghost" window in bottom left corner, fixing this would require rewriting relatively complex parts of the plugin.
+- Max framerate is limited by the game's tick rate (40 fps).
