@@ -7,6 +7,6 @@
   "requirements": ["maxi-mol.fivepebblespong"],
   "requirements_names": ["Five Pebbles Pong"],
   "tags": ["Tools"],
-  "update_url": "https://github.com/woutkolkman/projectionscreenwindows",
+  "update_url": "https://github.com/woutkolkman/projectionscreenwindows/releases/latest",
   "checksum_override_version": false
 }
